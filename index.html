@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnóstico micrófono</title>
+<style>
+  body{ background:#14171c; color:#f2efe7; font-family:system-ui,-apple-system,sans-serif; padding:20px; margin:0; }
+  h1{ font-size:20px; }
+  button{ font-size:18px; padding:16px 24px; border-radius:10px; border:none; background:#33c7c1; color:#0a1414; font-weight:700; width:100%; margin-bottom:16px; }
+  button:active{ transform:scale(0.98); }
+  pre{ white-space:pre-wrap; word-break:break-word; background:#1c2129; border:1px solid rgba(244,241,231,0.1); border-radius:10px; padding:14px; font-size:14px; line-height:1.6; }
+  .ok{ color:#8bd450; }
+  .err{ color:#ff5a36; }
+</style>
+</head>
+<body>
+<h1>🎙️ Diagnóstico de micrófono</h1>
+<button id="test">PROBAR MICRÓFONO</button>
+<pre id="result">Pulsa el botón de arriba.</pre>
+
+<script>
+const result = document.getElementById("result");
+
+document.getElementById("test").onclick = async () => {
+  result.textContent = "Iniciando...\n\n";
+  result.textContent +=
+    "URL: " + location.href + "\n" +
+    "isSecureContext: " + window.isSecureContext + "\n" +
+    "mediaDevices existe: " + !!navigator.mediaDevices + "\n\n";
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    result.innerHTML += '<span class="err">ERROR: navigator.mediaDevices o getUserMedia NO EXISTE en este navegador.</span>';
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const track = stream.getAudioTracks()[0];
+    result.innerHTML +=
+      '<span class="ok">✅ MICRÓFONO CONCEDIDO</span>\n' +
+      "Track label: " + (track.label || "(sin nombre)") + "\n" +
+      "Estado: " + track.readyState + "\n";
+    stream.getTracks().forEach(t => t.stop());
+  } catch (err) {
+    let details = "";
+    try { details = JSON.stringify(err, Object.getOwnPropertyNames(err), 2); } catch(e) { details = "(no serializable)"; }
+    result.innerHTML +=
+      '<span class="err">❌ ERROR</span>\n\n' +
+      "name: " + err.name + "\n" +
+      "message: " + err.message + "\n" +
+      "constructor: " + err.constructor.name + "\n\n" +
+      details;
+  }
+};
+</script>
+</body>
+</html>
