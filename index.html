@@ -361,7 +361,7 @@
   "use strict";
 
   /* ============ storage ============ */
-  var STORAGE_KEY = "marcador_v1";
+  var STORAGE_KEY = "marcador_v2"; // bumped so everyone gets the new seeded routines below
 
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
@@ -373,26 +373,65 @@
       seconds: 30,
       reps: 12,
       estSeconds: 40,
-      rest: 20
+      rest: 20,
+      sets: 1          // series: how many times this exercise repeats before moving on
     }, overrides || {});
   }
 
-  function seedRoutine(){
-    return {
-      id: uid(),
-      name: "Full body rápido",
-      targetMinutes: 30,
-      steps: [
-        defaultStep({ name:"Jumping jacks", type:"time", seconds:40, rest:20 }),
-        defaultStep({ name:"Sentadillas", type:"reps", reps:15, estSeconds:40, rest:20 }),
-        defaultStep({ name:"Flexiones", type:"reps", reps:12, estSeconds:40, rest:20 }),
-        defaultStep({ name:"Plancha", type:"time", seconds:45, rest:20 }),
-        defaultStep({ name:"Zancadas", type:"reps", reps:20, estSeconds:45, rest:20 }),
-        defaultStep({ name:"Burpees", type:"time", seconds:30, rest:30 }),
-        defaultStep({ name:"Mountain climbers", type:"time", seconds:40, rest:20 }),
-        defaultStep({ name:"Plancha lateral", type:"time", seconds:30, rest:0 })
-      ]
-    };
+  function seedRoutines(){
+    return [
+      {
+        id: uid(),
+        name: "Fuerza A",
+        targetMinutes: null,
+        rounds: 1,
+        steps: [
+          defaultStep({ name:"Press banca (8-10 reps)", type:"reps", reps:10, estSeconds:40, rest:90, sets:3 }),
+          defaultStep({ name:"Dominadas (máx. reps, deja 1-2 en reserva)", type:"reps", reps:0, estSeconds:30, rest:90, sets:3 }),
+          defaultStep({ name:"Remo en polea baja (10-12 reps)", type:"reps", reps:12, estSeconds:35, rest:75, sets:3 }),
+          defaultStep({ name:"Sentadilla con kettlebell (12-15 reps)", type:"reps", reps:15, estSeconds:40, rest:90, sets:3 }),
+          defaultStep({ name:"Plancha lateral (20-30s por lado, alterna)", type:"time", seconds:25, rest:45, sets:2 })
+        ]
+      },
+      {
+        id: uid(),
+        name: "Condicionamiento",
+        targetMinutes: null,
+        rounds: 1,
+        steps: [
+          defaultStep({ name:"Burpees", type:"reps", reps:8, estSeconds:35, rest:45, sets:5 }),
+          defaultStep({ name:"Sentadillas con salto", type:"reps", reps:10, estSeconds:25, rest:30, sets:3 }),
+          defaultStep({ name:"Flexiones (8-12 reps)", type:"reps", reps:12, estSeconds:30, rest:30, sets:3 }),
+          defaultStep({ name:"Plancha (30-45s)", type:"time", seconds:38, rest:30, sets:3 })
+        ]
+      },
+      {
+        id: uid(),
+        name: "Fuerza B",
+        targetMinutes: null,
+        rounds: 1,
+        steps: [
+          defaultStep({ name:"Press banca (8-10 reps)", type:"reps", reps:10, estSeconds:40, rest:90, sets:3 }),
+          defaultStep({ name:"Dominadas (máx. reps)", type:"reps", reps:0, estSeconds:30, rest:90, sets:3 }),
+          defaultStep({ name:"Remo en polea baja (10-12 reps)", type:"reps", reps:12, estSeconds:35, rest:75, sets:3 }),
+          defaultStep({ name:"Sentadilla con kettlebell (12-15 reps)", type:"reps", reps:15, estSeconds:40, rest:90, sets:3 }),
+          defaultStep({ name:"Plancha lateral (20-30s por lado, alterna)", type:"time", seconds:25, rest:45, sets:2 })
+        ]
+      },
+      {
+        id: uid(),
+        name: "Suave",
+        targetMinutes: null,
+        rounds: 3,
+        steps: [
+          defaultStep({ name:"Sentadillas con kettlebell", type:"reps", reps:12, estSeconds:35, rest:15, sets:1 }),
+          defaultStep({ name:"Flexiones (8-10 reps)", type:"reps", reps:10, estSeconds:25, rest:15, sets:1 }),
+          defaultStep({ name:"Remo en polea baja", type:"reps", reps:12, estSeconds:30, rest:15, sets:1 }),
+          defaultStep({ name:"Plancha", type:"time", seconds:30, rest:15, sets:1 }),
+          defaultStep({ name:"Bird-dog (8 por lado)", type:"reps", reps:8, estSeconds:30, rest:15, sets:1 })
+        ]
+      }
+    ];
   }
 
   function loadState(){
@@ -406,7 +445,7 @@
         }
       }
     }catch(e){}
-    var seeded = { routines:[seedRoutine()], settings:{ sound:true, vibration:true, voice:false } };
+    var seeded = { routines: seedRoutines(), settings:{ sound:true, vibration:true, voice:false } };
     return seeded;
   }
 
@@ -431,10 +470,11 @@
   function routineTotalSeconds(routine){
     var total = 0;
     routine.steps.forEach(function(step){
-      total += stepOwnSeconds(step);
-      total += Number(step.rest)||0;
+      var sets = Math.max(1, Number(step.sets)||1);
+      total += sets * (stepOwnSeconds(step) + (Number(step.rest)||0));
     });
-    return total;
+    var rounds = Math.max(1, Number(routine.rounds)||1);
+    return total * rounds;
   }
 
   function escapeHtml(str){
@@ -599,7 +639,8 @@
       };
       recognition.onend = function(){
         voiceListening = false;
-        if(state.settings.voice && player.phase === "running"){
+        // keep listening through a pause too, so "continúa" said out loud can resume it
+        if(state.settings.voice && (player.phase === "running" || player.phase === "paused")){
           try{ recognition.start(); }catch(e){
             state.settings.voice = false;
             voiceError = "No se pudo reactivar el micrófono.";
@@ -679,14 +720,37 @@
 
   function buildQueue(routine){
     var q = [];
-    routine.steps.forEach(function(step, i){
-      q.push({ kind:"exercise", stepId:step.id, name:step.name || "Ejercicio "+(i+1), type:step.type, seconds:step.seconds, reps:step.reps, estSeconds:step.estSeconds });
-      var rest = Number(step.rest)||0;
-      if(rest > 0){
-        var next = routine.steps[i+1];
-        q.push({ kind:"rest", seconds:rest, nextName: next ? (next.name || "el siguiente ejercicio") : null });
-      }
-    });
+    var rounds = Math.max(1, Number(routine.rounds)||1);
+    for(var r=0; r<rounds; r++){
+      routine.steps.forEach(function(step, i){
+        var name = step.name || ("Ejercicio "+(i+1));
+        var sets = Math.max(1, Number(step.sets)||1);
+        var rest = Number(step.rest)||0;
+        for(var s=0; s<sets; s++){
+          q.push({
+            kind:"exercise", stepId:step.id, name:name, type:step.type,
+            seconds:step.seconds, reps:step.reps, estSeconds:step.estSeconds,
+            setIndex:s+1, setsTotal:sets, roundIndex:r+1, roundsTotal:rounds
+          });
+          if(rest > 0){
+            var nextName;
+            if(s < sets-1){
+              nextName = name; // same exercise, next set
+            }else{
+              var nextStep = routine.steps[i+1];
+              if(nextStep){
+                nextName = nextStep.name || "el siguiente ejercicio";
+              }else if(r < rounds-1){
+                nextName = "la vuelta " + (r+2);
+              }else{
+                nextName = null;
+              }
+            }
+            q.push({ kind:"rest", seconds:rest, nextName: nextName });
+          }
+        }
+      });
+    }
     return q;
   }
 
@@ -850,7 +914,7 @@
     var stepId = t.getAttribute("data-step");
 
     if(action === "new-routine"){
-      var r = { id:uid(), name:"Nueva rutina", targetMinutes:null, steps:[] };
+      var r = { id:uid(), name:"Nueva rutina", targetMinutes:null, rounds:1, steps:[] };
       state.routines.push(r);
       persist();
       go("editor", { editingId:r.id });
@@ -953,11 +1017,19 @@
       updateTotalBarDom(routine);
       return;
     }
+    if(field === "rounds"){
+      var roundsNum = t.value === "" ? 1 : Math.max(1, Number(t.value)||1);
+      routine.rounds = roundsNum;
+      persist();
+      updateTotalBarDom(routine);
+      return;
+    }
     var step = routine.steps.find(function(s){ return s.id === stepId; });
     if(!step) return;
     if(field === "name"){ step.name = t.value; persist(); return; }
-    if(field === "seconds" || field === "estSeconds" || field === "reps" || field === "rest"){
+    if(field === "seconds" || field === "estSeconds" || field === "reps" || field === "rest" || field === "sets"){
       var num = t.value === "" ? 0 : Number(t.value);
+      if(field === "sets") num = Math.max(1, num||1);
       step[field] = num;
       persist();
       updateTotalBarDom(routine);
@@ -1005,7 +1077,8 @@
         var total = routineTotalSeconds(r);
         html += '<div class="card routine-card">';
         html += '<div class="head"><h3>'+escapeHtml(r.name||"Sin nombre")+'</h3></div>';
-        html += '<div class="meta">'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+' · '+fmtTime(total)+' total'+(r.targetMinutes?' · objetivo '+r.targetMinutes+' min':'')+'</div>';
+        var roundsN = Math.max(1, Number(r.rounds)||1);
+        html += '<div class="meta">'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+(roundsN>1?' · '+roundsN+' vueltas':'')+' · '+fmtTime(total)+' total'+(r.targetMinutes?' · objetivo '+r.targetMinutes+' min':'')+'</div>';
         html += '<div class="actions">';
         html += '<button class="btn btn-primary btn-lg" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+'>▶ Empezar</button>';
         html += '</div>';
@@ -1056,6 +1129,10 @@
     }
     html += deltaHtml;
     html += '</div>'; // goal-row
+    html += '<div class="goal-row">';
+    html += '<div class="total-label">Vueltas</div>';
+    html += '<input class="goal-input" type="number" min="1" data-field="rounds" value="'+(routine.rounds!=null?routine.rounds:1)+'">';
+    html += '</div>'; // goal-row (rounds)
     html += '</div>'; // total-bar
 
     html += '<div class="steps">';
@@ -1110,6 +1187,11 @@
       html += '</div></div>';
     }
 
+    html += '<div class="field-row"><div class="field"><label>Series</label>';
+    html += '<input type="number" min="1" data-field="sets" data-step="'+step.id+'" value="'+(step.sets!=null?step.sets:1)+'">';
+    html += chipsRow("sets", step.id, step.sets!=null?step.sets:1, [1,2,3,4,5]);
+    html += '</div></div>';
+
     html += '<div class="field-row"><div class="field"><label>Descanso después (segundos)</label>';
     html += '<input type="number" min="0" data-field="rest" data-step="'+step.id+'" value="'+step.rest+'">';
     html += chipsRow("rest", step.id, step.rest, [0,10,15,20,30,45,60]);
@@ -1151,7 +1233,12 @@
     var isTimed = isRest || item.type === "time";
     var routine = player.routine;
     var stepNumber = player.queue.slice(0, player.index+1).filter(function(q){return q.kind==="exercise";}).length;
-    var exerciseCount = routine.steps.length;
+    var exerciseCount = player.queue.filter(function(q){return q.kind==="exercise";}).length;
+    var stepOfExtra = "";
+    if(!isRest){
+      if(item.setsTotal && item.setsTotal>1) stepOfExtra += " · Serie "+item.setIndex+"/"+item.setsTotal;
+      if(item.roundsTotal && item.roundsTotal>1) stepOfExtra += " · Vuelta "+item.roundIndex+"/"+item.roundsTotal;
+    }
 
     var html = '<div class="player">';
 
@@ -1163,7 +1250,7 @@
 
     var overallPct = player.totalPlanned>0 ? Math.min(100,(player.totalElapsed/player.totalPlanned)*100) : 0;
     html += '<div class="progress-track"><div class="progress-fill" id="overallFill" style="width:'+overallPct+'%"></div></div>';
-    html += '<div class="step-of">Ejercicio '+Math.max(1,stepNumber)+' de '+exerciseCount+'</div>';
+    html += '<div class="step-of">Ejercicio '+Math.max(1,stepNumber)+' de '+exerciseCount+stepOfExtra+'</div>';
 
     html += '<div class="hero">';
     html += '<span class="phase-pill '+(isRest?'rest':'work')+'">'+(isRest?"Descanso":"Ejercicio")+'</span>';
