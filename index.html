@@ -737,6 +737,9 @@
 
     if(item.kind === "rest" || item.type === "time"){
       var remaining = Math.max(0, Math.round((player.endAt - Date.now())/1000));
+      player.remaining = remaining; // keep this live so any full re-render (e.g. voice recognition
+                                     // auto-restarting) redraws the real countdown, not the stale
+                                     // full-duration value from when the step started
       if(remaining !== player.lastTickSecond){
         player.lastTickSecond = remaining;
         if(remaining <= 3 && remaining > 0) tick3();
