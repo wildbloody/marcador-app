@@ -3,56 +3,1236 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Diagnóstico micrófono</title>
+<title>Marcador</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
-  body{ background:#14171c; color:#f2efe7; font-family:system-ui,-apple-system,sans-serif; padding:20px; margin:0; }
-  h1{ font-size:20px; }
-  button{ font-size:18px; padding:16px 24px; border-radius:10px; border:none; background:#33c7c1; color:#0a1414; font-weight:700; width:100%; margin-bottom:16px; }
-  button:active{ transform:scale(0.98); }
-  pre{ white-space:pre-wrap; word-break:break-word; background:#1c2129; border:1px solid rgba(244,241,231,0.1); border-radius:10px; padding:14px; font-size:14px; line-height:1.6; }
-  .ok{ color:#8bd450; }
-  .err{ color:#ff5a36; }
+  :root{
+    color-scheme: dark;
+    --ink:#14171c;
+    --panel:#1c2129;
+    --panel-2:#242b35;
+    --panel-3:#2d3542;
+    --line: rgba(244,241,231,0.10);
+    --line-soft: rgba(244,241,231,0.06);
+    --chalk:#f2efe7;
+    --muted:#94a0b0;
+    --muted-2:#5f6773;
+    --work:#ff5a36;
+    --work-soft: rgba(255,90,54,0.16);
+    --rest:#33c7c1;
+    --rest-soft: rgba(51,199,193,0.16);
+    --go:#8bd450;
+    --go-soft: rgba(139,212,80,0.16);
+    --warn:#ffcf5c;
+    --warn-soft: rgba(255,207,92,0.16);
+    --radius: 10px;
+    --radius-lg: 18px;
+    --font-display: 'Bebas Neue', 'Arial Narrow', sans-serif;
+    --font-body: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--ink);
+    color:var(--chalk);
+    font-family:var(--font-body);
+    min-height:100dvh;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{ font-family:var(--font-display); letter-spacing:0.02em; text-wrap:balance; margin:0; }
+  p{ margin:0; }
+  button{ font-family:inherit; }
+  input{ font-family:inherit; }
+  ::selection{ background:var(--rest); color:#0a0d10; }
+
+  :focus-visible{ outline:2px solid var(--rest); outline-offset:2px; border-radius:4px; }
+
+  .app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* ---------- shared bits ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:18px 18px 10px;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .brand .mark{
+    font-family:var(--font-display);
+    font-size:28px;
+    letter-spacing:0.03em;
+    color:var(--chalk);
+  }
+  .brand .tag{
+    font-size:11px;
+    color:var(--muted-2);
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+  }
+
+  .btn{
+    appearance:none;
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    color:var(--chalk);
+    padding:12px 16px;
+    border-radius:var(--radius);
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:transform .08s ease, background .15s ease, border-color .15s ease;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-primary{ background:var(--rest); color:#0a1414; border-color:var(--rest); }
+  .btn-primary:hover{ filter:brightness(1.05); }
+  .btn-work{ background:var(--work); color:#1a0700; border-color:var(--work); }
+  .btn-go{ background:var(--go); color:#0d1a02; border-color:var(--go); }
+  .btn-ghost{ background:transparent; color:var(--muted); border-color:var(--line); }
+  .btn-ghost:hover{ color:var(--chalk); border-color:var(--muted-2); }
+  .btn-danger-ghost{ background:transparent; color:var(--work); border-color:var(--work-soft); }
+  .btn-block{ width:100%; }
+  .btn-lg{ padding:16px 20px; font-size:17px; }
+  .btn-icon{ padding:10px; border-radius:999px; width:44px; height:44px; }
+  .btn[disabled]{ opacity:0.35; cursor:not-allowed; }
+  .btn-sm{ padding:8px 12px; font-size:13px; }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    padding:16px;
+  }
+
+  .screen{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    padding-bottom:24px;
+  }
+
+  .empty{
+    margin:40px 18px;
+    text-align:center;
+    color:var(--muted);
+    padding:32px 18px;
+    border:1px dashed var(--line);
+    border-radius:var(--radius-lg);
+  }
+  .empty .mark-big{ font-family:var(--font-display); font-size:22px; color:var(--chalk); display:block; margin-bottom:6px; }
+
+  /* ---------- home ---------- */
+  .routine-list{ display:flex; flex-direction:column; gap:12px; padding:6px 18px 18px; }
+  .routine-card{ display:flex; flex-direction:column; gap:12px; }
+  .routine-card .head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .routine-card h3{ font-size:24px; color:var(--chalk); }
+  .routine-card .meta{ color:var(--muted); font-size:13px; font-variant-numeric:tabular-nums; }
+  .routine-card .actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .routine-card .actions .btn{ flex:1; }
+  .routine-card .util-row{ display:flex; gap:14px; }
+  .util-link{ background:none; border:none; color:var(--muted-2); font-size:12.5px; padding:2px 0; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+  .util-link:hover{ color:var(--muted); }
+  .util-link.danger{ color:#a85246; }
+
+  .new-routine-bar{ padding:6px 18px 18px; }
+
+  /* ---------- editor ---------- */
+  .editor-header{ padding:0 18px 12px; display:flex; flex-direction:column; gap:10px; }
+  .name-input{
+    background:transparent;
+    border:none;
+    border-bottom:2px solid var(--line);
+    color:var(--chalk);
+    font-family:var(--font-display);
+    font-size:30px;
+    letter-spacing:0.02em;
+    padding:6px 2px;
+    width:100%;
+  }
+  .name-input:focus{ border-bottom-color:var(--rest); }
+
+  .total-bar{
+    position:sticky; top:0; z-index:5;
+    margin:0 18px 14px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .total-bar .total-time{ font-family:var(--font-mono); font-size:22px; font-variant-numeric:tabular-nums; color:var(--chalk); }
+  .total-bar .total-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted-2); }
+  .total-bar .goal-row{ display:flex; align-items:center; gap:8px; }
+  .goal-input{
+    width:56px; background:var(--panel-2); border:1px solid var(--line); color:var(--chalk);
+    border-radius:6px; padding:6px 6px; font-family:var(--font-mono); text-align:center; font-size:14px;
+  }
+  .delta-pill{ font-size:12px; padding:4px 9px; border-radius:999px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .delta-ok{ background:var(--go-soft); color:var(--go); }
+  .delta-mid{ background:var(--warn-soft); color:var(--warn); }
+  .delta-off{ background:var(--work-soft); color:var(--work); }
+
+  .steps{ display:flex; flex-direction:column; gap:10px; padding:0 18px; }
+  .step-card{ display:flex; flex-direction:column; gap:12px; }
+  .step-top{ display:flex; align-items:center; gap:10px; }
+  .step-index{
+    font-family:var(--font-mono); font-size:13px; color:var(--muted-2);
+    width:22px; text-align:center; flex-shrink:0;
+  }
+  .step-name{
+    flex:1; background:var(--panel-2); border:1px solid var(--line); color:var(--chalk);
+    border-radius:8px; padding:10px 12px; font-size:15px; font-weight:600;
+  }
+  .step-name::placeholder{ color:var(--muted-2); font-weight:400; }
+
+  .seg-toggle{ display:flex; background:var(--panel-2); border:1px solid var(--line); border-radius:999px; padding:3px; gap:2px; }
+  .seg-toggle button{
+    appearance:none; border:none; background:transparent; color:var(--muted);
+    font-size:12.5px; font-weight:600; padding:7px 12px; border-radius:999px; cursor:pointer;
+    text-transform:uppercase; letter-spacing:0.04em;
+  }
+  .seg-toggle button.active.type-time{ background:var(--work); color:#1a0700; }
+  .seg-toggle button.active.type-reps{ background:var(--rest); color:#0a1414; }
+
+  .field-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .field{ flex:1; min-width:120px; display:flex; flex-direction:column; gap:6px; }
+  .field label{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted-2); }
+  .field input[type=number]{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--chalk);
+    border-radius:8px; padding:9px 10px; font-family:var(--font-mono); font-size:16px; width:100%;
+  }
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; }
+  .chip{
+    appearance:none; border:1px solid var(--line); background:transparent; color:var(--muted);
+    font-family:var(--font-mono); font-size:12px; padding:5px 9px; border-radius:7px; cursor:pointer;
+  }
+  .chip:hover{ border-color:var(--muted-2); color:var(--chalk); }
+  .chip.active{ background:var(--panel-3); color:var(--chalk); border-color:var(--muted-2); }
+
+  .step-bottom{ display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid var(--line-soft); padding-top:10px; }
+  .step-tools{ display:flex; gap:6px; }
+  .tool-btn{
+    appearance:none; border:1px solid var(--line); background:transparent; color:var(--muted);
+    width:34px; height:34px; border-radius:8px; cursor:pointer; font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tool-btn:hover{ color:var(--chalk); border-color:var(--muted-2); }
+  .tool-btn.remove:hover{ color:var(--work); border-color:var(--work-soft); }
+  .tool-btn[disabled]{ opacity:0.3; cursor:not-allowed; }
+
+  .add-step-bar{ padding:14px 18px 6px; }
+  .editor-footer{ padding:18px 18px 6px; display:flex; gap:10px; }
+
+  /* ---------- player ---------- */
+  .player{ flex:1; display:flex; flex-direction:column; }
+  .player-top{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px 6px; }
+  .player-exit{ background:none; border:none; color:var(--muted-2); font-size:13px; cursor:pointer; padding:6px; }
+  .player-title{ color:var(--muted); font-size:13px; font-weight:600; }
+  .player-total{ font-family:var(--font-mono); color:var(--muted-2); font-size:13px; font-variant-numeric:tabular-nums; }
+
+  .progress-track{ height:4px; background:var(--panel-2); margin:6px 18px 0; border-radius:999px; overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--rest); border-radius:999px; transition:width .3s linear; }
+  .step-of{ text-align:center; font-size:12px; color:var(--muted-2); padding:8px 0 0; font-variant-numeric:tabular-nums; }
+
+  .hero{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:18px; padding:20px 24px; text-align:center;
+  }
+  .phase-pill{
+    font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.14em;
+    padding:7px 18px; border-radius:999px;
+  }
+  .phase-pill.work{ background:var(--work-soft); color:var(--work); }
+  .phase-pill.rest{ background:var(--rest-soft); color:var(--rest); }
+  .phase-pill.done{ background:var(--go-soft); color:var(--go); }
+
+  .exercise-name{ font-size:clamp(30px,9vw,46px); color:var(--chalk); }
+
+  .timer-digits{
+    font-family:var(--font-mono); font-weight:700; font-variant-numeric:tabular-nums;
+    font-size:clamp(64px,26vw,120px); line-height:1; letter-spacing:-0.01em;
+  }
+  .timer-digits.work{ color:var(--work); }
+  .timer-digits.rest{ color:var(--rest); }
+
+  .ring-track{ width:min(220px,60vw); height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden; }
+  .ring-fill{ height:100%; border-radius:999px; transition:width 1s linear; }
+  .ring-fill.work{ background:var(--work); }
+  .ring-fill.rest{ background:var(--rest); }
+
+  .reps-block{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .reps-number{ font-family:var(--font-mono); font-weight:700; font-size:clamp(56px,20vw,88px); color:var(--chalk); }
+  .reps-label{ color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:0.1em; }
+  .reps-stopwatch{ font-family:var(--font-mono); color:var(--muted-2); font-size:15px; margin-top:4px; }
+  .reps-hint{ color:var(--muted-2); font-size:13px; margin-top:6px; }
+
+  .next-up{ color:var(--muted-2); font-size:14px; }
+  .next-up b{ color:var(--muted); font-weight:600; }
+
+  .controls{ padding:10px 18px 6px; display:flex; flex-direction:column; gap:12px; }
+  .transport{ display:flex; align-items:center; justify-content:center; gap:16px; }
+  .transport .btn-icon{ font-size:18px; }
+  .done-btn-wrap{ padding:0 2px; }
+
+  .util-controls{ display:flex; align-items:center; justify-content:center; gap:10px; padding:4px 0; flex-wrap:wrap; }
+  .toggle-pill{
+    display:flex; align-items:center; gap:7px; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:999px; padding:7px 13px; font-size:12.5px; color:var(--muted); cursor:pointer;
+  }
+  .toggle-pill.on{ color:var(--chalk); border-color:var(--muted-2); }
+  .toggle-pill.listening{ color:var(--rest); border-color:var(--rest); }
+  .toggle-pill.error{ color:var(--muted-2); opacity:0.6; cursor:not-allowed; }
+  .dot{ width:7px; height:7px; border-radius:50%; background:var(--muted-2); }
+  .dot.on{ background:var(--go); box-shadow:0 0 0 3px var(--go-soft); }
+  .dot.listening{ background:var(--rest); animation:pulse-dot 1.2s ease-in-out infinite; }
+
+  .voice-note{ text-align:center; font-size:11.5px; color:var(--muted-2); padding:0 30px; }
+
+  .end-link{ text-align:center; padding:10px 0 2px; }
+  .end-link button{ background:none; border:none; color:var(--muted-2); font-size:13px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+
+  /* summary */
+  .summary{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; text-align:center; }
+  .summary .big-check{ font-family:var(--font-display); font-size:40px; color:var(--go); }
+  .summary .sub{ color:var(--muted); font-size:15px; }
+  .summary .stat{ font-family:var(--font-mono); font-size:40px; color:var(--chalk); }
+  .summary .actions{ display:flex; gap:10px; margin-top:10px; width:100%; max-width:320px; }
+  .summary .actions .btn{ flex:1; }
+
+  /* flash overlay */
+  .flash-overlay{
+    position:fixed; inset:0; pointer-events:none; z-index:50;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; background:transparent;
+  }
+  .flash-overlay.flashing{ animation:flash-anim 0.9s ease-out; }
+  .flash-overlay.flash-work{ background:var(--work); }
+  .flash-overlay.flash-rest{ background:var(--rest); }
+  .flash-overlay .flash-word{
+    font-family:var(--font-display); font-size:15vw; color:rgba(10,10,10,0.85);
+    opacity:0; letter-spacing:0.03em;
+  }
+  .flash-overlay.flashing .flash-word{ animation:word-anim 0.9s ease-out; }
+
+  @keyframes flash-anim{ 0%{opacity:0.85;} 100%{opacity:0;} }
+  @keyframes word-anim{ 0%{opacity:0; transform:scale(0.85);} 25%{opacity:1; transform:scale(1);} 100%{opacity:0; transform:scale(1.05);} }
+  @keyframes pulse-dot{ 0%,100%{ box-shadow:0 0 0 0 var(--rest-soft);} 50%{ box-shadow:0 0 0 6px var(--rest-soft);} }
+
+  @media (prefers-reduced-motion: reduce){
+    .flash-overlay.flashing, .flash-overlay.flashing .flash-word, .dot.listening{ animation:none !important; }
+  }
+
+  .help{ margin:0 18px 14px; }
+  .help summary{ cursor:pointer; color:var(--muted-2); font-size:12.5px; list-style:none; }
+  .help summary::-webkit-details-marker{ display:none; }
+  .help summary:before{ content:"?  "; color:var(--muted-2); }
+  .help[open] summary{ margin-bottom:8px; }
+  .help p{ color:var(--muted); font-size:13px; line-height:1.5; margin-bottom:8px; }
 </style>
 </head>
 <body>
-<h1>🎙️ Diagnóstico de micrófono</h1>
-<button id="test">PROBAR MICRÓFONO</button>
-<pre id="result">Pulsa el botón de arriba.</pre>
+<div class="app" id="app"></div>
+<div class="flash-overlay" id="flashOverlay"><span class="flash-word" id="flashWord"></span></div>
 
 <script>
-const result = document.getElementById("result");
+(function(){
+  "use strict";
 
-document.getElementById("test").onclick = async () => {
-  result.textContent = "Iniciando...\n\n";
-  result.textContent +=
-    "URL: " + location.href + "\n" +
-    "isSecureContext: " + window.isSecureContext + "\n" +
-    "mediaDevices existe: " + !!navigator.mediaDevices + "\n\n";
+  /* ============ storage ============ */
+  var STORAGE_KEY = "marcador_v1";
 
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    result.innerHTML += '<span class="err">ERROR: navigator.mediaDevices o getUserMedia NO EXISTE en este navegador.</span>';
-    return;
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+  function defaultStep(overrides){
+    return Object.assign({
+      id: uid(),
+      name: "",
+      type: "time",   // 'time' | 'reps'
+      seconds: 30,
+      reps: 12,
+      estSeconds: 40,
+      rest: 20
+    }, overrides || {});
   }
 
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const track = stream.getAudioTracks()[0];
-    result.innerHTML +=
-      '<span class="ok">✅ MICRÓFONO CONCEDIDO</span>\n' +
-      "Track label: " + (track.label || "(sin nombre)") + "\n" +
-      "Estado: " + track.readyState + "\n";
-    stream.getTracks().forEach(t => t.stop());
-  } catch (err) {
-    let details = "";
-    try { details = JSON.stringify(err, Object.getOwnPropertyNames(err), 2); } catch(e) { details = "(no serializable)"; }
-    result.innerHTML +=
-      '<span class="err">❌ ERROR</span>\n\n' +
-      "name: " + err.name + "\n" +
-      "message: " + err.message + "\n" +
-      "constructor: " + err.constructor.name + "\n\n" +
-      details;
+  function seedRoutine(){
+    return {
+      id: uid(),
+      name: "Full body rápido",
+      targetMinutes: 30,
+      steps: [
+        defaultStep({ name:"Jumping jacks", type:"time", seconds:40, rest:20 }),
+        defaultStep({ name:"Sentadillas", type:"reps", reps:15, estSeconds:40, rest:20 }),
+        defaultStep({ name:"Flexiones", type:"reps", reps:12, estSeconds:40, rest:20 }),
+        defaultStep({ name:"Plancha", type:"time", seconds:45, rest:20 }),
+        defaultStep({ name:"Zancadas", type:"reps", reps:20, estSeconds:45, rest:20 }),
+        defaultStep({ name:"Burpees", type:"time", seconds:30, rest:30 }),
+        defaultStep({ name:"Mountain climbers", type:"time", seconds:40, rest:20 }),
+        defaultStep({ name:"Plancha lateral", type:"time", seconds:30, rest:0 })
+      ]
+    };
   }
-};
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        var parsed = JSON.parse(raw);
+        if(parsed && parsed.routines && parsed.routines.length){
+          parsed.settings = Object.assign({ sound:true, vibration:true, voice:false }, parsed.settings || {});
+          return parsed;
+        }
+      }
+    }catch(e){}
+    var seeded = { routines:[seedRoutine()], settings:{ sound:true, vibration:true, voice:false } };
+    return seeded;
+  }
+
+  var state = loadState();
+
+  function persist(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  /* ============ helpers ============ */
+  function fmtTime(totalSeconds){
+    totalSeconds = Math.max(0, Math.round(totalSeconds));
+    var m = Math.floor(totalSeconds/60);
+    var s = totalSeconds%60;
+    return (m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+  }
+
+  function stepOwnSeconds(step){
+    return step.type === "time" ? (Number(step.seconds)||0) : (Number(step.estSeconds)||0);
+  }
+
+  function routineTotalSeconds(routine){
+    var total = 0;
+    routine.steps.forEach(function(step){
+      total += stepOwnSeconds(step);
+      total += Number(step.rest)||0;
+    });
+    return total;
+  }
+
+  function escapeHtml(str){
+    return String(str==null?"":str).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  /* ============ view / routing ============ */
+  var view = "home";          // 'home' | 'editor' | 'player'
+  var editingId = null;
+  var app = document.getElementById("app");
+
+  function go(v, opts){
+    view = v;
+    if(opts && opts.editingId !== undefined) editingId = opts.editingId;
+    render();
+  }
+
+  function findRoutine(id){
+    for(var i=0;i<state.routines.length;i++) if(state.routines[i].id===id) return state.routines[i];
+    return null;
+  }
+
+  /* ============ audio / haptics / flash ============ */
+  var audioCtx = null;
+  function ensureAudio(){
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+    }else if(audioCtx.state === "suspended"){
+      audioCtx.resume().catch(function(){});
+    }
+    return audioCtx;
+  }
+
+  function beep(freq, dur, vol, type){
+    if(!state.settings.sound) return;
+    var ctx = ensureAudio();
+    if(!ctx) return;
+    try{
+      var t0 = ctx.currentTime;
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = type || "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(vol||0.25, t0+0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + (dur||150)/1000);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + (dur||150)/1000 + 0.03);
+    }catch(e){}
+  }
+
+  function vibrate(pattern){
+    if(!state.settings.vibration) return;
+    try{ navigator.vibrate && navigator.vibrate(pattern); }catch(e){}
+  }
+
+  function flashScreen(kind, word){
+    var overlay = document.getElementById("flashOverlay");
+    var wordEl = document.getElementById("flashWord");
+    if(!overlay) return;
+    overlay.classList.remove("flashing","flash-work","flash-rest");
+    // force reflow to restart animation
+    void overlay.offsetWidth;
+    wordEl.textContent = word || "";
+    overlay.classList.add("flashing", kind === "rest" ? "flash-rest" : "flash-work");
+    window.setTimeout(function(){
+      overlay.classList.remove("flashing","flash-work","flash-rest");
+    }, 950);
+  }
+
+  function alertExerciseEnd(){
+    beep(880,120,0.28,"square");
+    window.setTimeout(function(){ beep(880,120,0.28,"square"); },160);
+    window.setTimeout(function(){ beep(1108,260,0.3,"square"); },330);
+    vibrate([120,80,120,80,240]);
+    flashScreen("rest","¡DESCANSO!");
+  }
+
+  function alertRestEnd(){
+    beep(660,150,0.28,"sine");
+    window.setTimeout(function(){ beep(988,320,0.3,"sine"); },190);
+    vibrate([160,100,320]);
+    flashScreen("work","¡VAMOS!");
+  }
+
+  function tick3(){
+    beep(520,70,0.16,"sine");
+  }
+
+  /* ============ wake lock ============ */
+  var wakeLock = null;
+  function requestWakeLock(){
+    try{
+      if("wakeLock" in navigator){
+        navigator.wakeLock.request("screen").then(function(sentinel){
+          wakeLock = sentinel;
+        }).catch(function(){});
+      }
+    }catch(e){}
+  }
+  function releaseWakeLock(){
+    try{ if(wakeLock){ wakeLock.release(); wakeLock = null; } }catch(e){}
+  }
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState === "visible" && player.phase === "running"){
+      requestWakeLock();
+    }
+  });
+
+  /* ============ voice recognition ============
+     Listens for the spoken word "hecho" (matching the on-screen button) to
+     confirm a rep-based exercise, or advance early, without touching the
+     screen. Needs a real top-level HTTPS origin — it will not work through
+     a sandboxed iframe or an Android content:// file link. */
+  var recognition = null;
+  var voiceSupported = false;
+  var voiceError = "";
+  var voiceListening = false;   // true only once the browser has actually confirmed it is capturing audio
+  var voiceWatchdog = null;
+
+  function setupRecognition(){
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ voiceSupported = false; return; }
+    voiceSupported = true;
+    try{
+      recognition = new SR();
+      recognition.lang = "es-ES";
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.onstart = function(){
+        voiceListening = true;
+        voiceError = "";
+        if(voiceWatchdog){ clearTimeout(voiceWatchdog); voiceWatchdog = null; }
+        renderPlayerLive();
+      };
+      recognition.onresult = function(e){
+        for(var i=e.resultIndex; i<e.results.length; i++){
+          var text = (e.results[i][0].transcript || "").trim().toLowerCase();
+          if(text) handleVoiceCommand(text);
+        }
+      };
+      recognition.onerror = function(e){
+        voiceListening = false;
+        if(e.error === "no-speech"){ return; } // not fatal, onend will restart it
+        var msg;
+        if(e.error === "not-allowed" || e.error === "service-not-allowed"){
+          msg = "Permiso de micrófono bloqueado aquí.";
+        }else if(e.error === "audio-capture"){
+          msg = "No se detecta ningún micrófono.";
+        }else if(e.error === "network"){
+          msg = "Sin conexión para reconocer la voz.";
+        }else{
+          msg = "No se pudo activar el micrófono aquí.";
+        }
+        state.settings.voice = false;
+        voiceError = msg;
+        persist();
+        renderPlayerLive();
+      };
+      recognition.onend = function(){
+        voiceListening = false;
+        if(state.settings.voice && player.phase === "running"){
+          try{ recognition.start(); }catch(e){
+            state.settings.voice = false;
+            voiceError = "No se pudo reactivar el micrófono.";
+            persist();
+            renderPlayerLive();
+          }
+        }
+      };
+    }catch(e){ voiceSupported = false; }
+  }
+
+  function handleVoiceCommand(text){
+    var doneWords = ["hecho","echo","hecha"];
+    var skipWords = ["siguiente","saltar"];
+    var pauseWords = ["pausa","detente"];
+    var resumeWords = ["continua","continúa","reanuda","sigue"];
+    function has(list){ return list.some(function(w){ return text.indexOf(w) !== -1; }); }
+
+    if(player.phase !== "running" && player.phase !== "paused") return;
+
+    if(has(doneWords)){
+      var item = player.queue[player.index];
+      if(item && item.kind === "exercise" && item.type === "reps"){ confirmDone(); }
+    } else if(has(skipWords)){
+      skipStep();
+    } else if(has(pauseWords)){
+      pausePlayer();
+    } else if(has(resumeWords)){
+      resumePlayer();
+    }
+  }
+
+  function toggleVoice(){
+    if(!voiceSupported){ return; }
+    state.settings.voice = !state.settings.voice;
+    voiceError = "";
+    persist();
+    if(voiceWatchdog){ clearTimeout(voiceWatchdog); voiceWatchdog = null; }
+    if(state.settings.voice){
+      voiceListening = false;
+      try{
+        recognition.start();
+        voiceWatchdog = setTimeout(function(){
+          if(state.settings.voice && !voiceListening){
+            state.settings.voice = false;
+            voiceError = "No se pudo activar el micrófono aquí.";
+            persist();
+            renderPlayerLive();
+          }
+        }, 2500);
+      }catch(e){
+        state.settings.voice = false;
+        voiceError = "No se pudo activar el micrófono aquí.";
+        persist();
+      }
+    }else{
+      try{ recognition.stop(); }catch(e){}
+      voiceListening = false;
+    }
+    renderPlayerLive();
+  }
+
+  /* ============ player state machine ============ */
+  var player = {
+    routine: null,
+    queue: [],
+    index: -1,
+    phase: "idle",      // idle | running | paused | done
+    endAt: 0,
+    remaining: 0,
+    repsElapsed: 0,
+    totalPlanned: 0,
+    totalElapsed: 0,
+    lastTickSecond: null,
+    intervalId: null
+  };
+
+  function buildQueue(routine){
+    var q = [];
+    routine.steps.forEach(function(step, i){
+      q.push({ kind:"exercise", stepId:step.id, name:step.name || "Ejercicio "+(i+1), type:step.type, seconds:step.seconds, reps:step.reps, estSeconds:step.estSeconds });
+      var rest = Number(step.rest)||0;
+      if(rest > 0){
+        var next = routine.steps[i+1];
+        q.push({ kind:"rest", seconds:rest, nextName: next ? (next.name || "el siguiente ejercicio") : null });
+      }
+    });
+    return q;
+  }
+
+  function startWorkout(routineId){
+    var routine = findRoutine(routineId);
+    if(!routine || !routine.steps.length) return;
+    ensureAudio();
+    setupRecognition();
+    player.routine = routine;
+    player.queue = buildQueue(routine);
+    player.index = -1;
+    player.totalPlanned = routineTotalSeconds(routine);
+    player.totalElapsed = 0;
+    player.phase = "running";
+    requestWakeLock();
+    if(state.settings.voice && recognition){ try{ recognition.start(); }catch(e){} }
+    goToStep(0);
+    if(player.intervalId) clearInterval(player.intervalId);
+    player.intervalId = setInterval(onTick, 1000);
+    go("player");
+  }
+
+  function currentItem(){ return player.queue[player.index]; }
+
+  function goToStep(newIndex){
+    if(newIndex >= player.queue.length){
+      finishWorkout();
+      return;
+    }
+    if(newIndex < 0) newIndex = 0;
+    player.index = newIndex;
+    var item = currentItem();
+    player.lastTickSecond = null;
+    if(item.kind === "rest" || item.type === "time"){
+      player.remaining = item.seconds;
+      player.endAt = Date.now() + item.seconds*1000;
+    }else{
+      player.repsElapsed = 0;
+    }
+    render();
+  }
+
+  function onTick(){
+    if(player.phase !== "running") return;
+    var item = currentItem();
+    if(!item) return;
+    player.totalElapsed += 1;
+
+    if(item.kind === "rest" || item.type === "time"){
+      var remaining = Math.max(0, Math.round((player.endAt - Date.now())/1000));
+      if(remaining !== player.lastTickSecond){
+        player.lastTickSecond = remaining;
+        if(remaining <= 3 && remaining > 0) tick3();
+        updateTimerDom(remaining, item);
+        if(remaining <= 0){
+          if(item.kind === "exercise"){ alertExerciseEnd(); } else { alertRestEnd(); }
+          window.setTimeout(function(){ goToStep(player.index+1); }, 150);
+        }
+      }
+    }else{
+      player.repsElapsed += 1;
+      updateRepsStopwatchDom(player.repsElapsed);
+    }
+    updateTotalElapsedDom();
+  }
+
+  function pausePlayer(){
+    if(player.phase !== "running") return;
+    var item = currentItem();
+    if(item && (item.kind === "rest" || item.type === "time")){
+      player.remaining = Math.max(0, Math.round((player.endAt - Date.now())/1000));
+    }
+    player.phase = "paused";
+    render();
+  }
+
+  function resumePlayer(){
+    if(player.phase !== "paused") return;
+    var item = currentItem();
+    if(item && (item.kind === "rest" || item.type === "time")){
+      player.endAt = Date.now() + player.remaining*1000;
+      player.lastTickSecond = null;
+    }
+    player.phase = "running";
+    requestWakeLock();
+    render();
+  }
+
+  function skipStep(){
+    if(player.phase === "done") return;
+    goToStep(player.index+1);
+  }
+  function prevStep(){
+    if(player.phase === "done") return;
+    if(player.index <= 0) return;
+    goToStep(player.index-1);
+  }
+  function confirmDone(){
+    var item = currentItem();
+    if(item && item.kind === "exercise" && item.type === "reps"){
+      goToStep(player.index+1);
+    }
+  }
+
+  function finishWorkout(){
+    player.phase = "done";
+    if(player.intervalId){ clearInterval(player.intervalId); player.intervalId = null; }
+    releaseWakeLock();
+    if(recognition){ try{ recognition.stop(); }catch(e){} }
+    render();
+  }
+
+  function exitWorkout(){
+    if(player.phase === "running" || player.phase === "paused"){
+      var ok = window.confirm("¿Salir del entrenamiento? Se perderá el progreso de esta sesión.");
+      if(!ok) return;
+    }
+    if(player.intervalId){ clearInterval(player.intervalId); player.intervalId = null; }
+    releaseWakeLock();
+    if(recognition){ try{ recognition.stop(); }catch(e){} }
+    player.phase = "idle";
+    go("home");
+  }
+
+  /* ---- cheap DOM updates during ticking (avoid full re-render / focus loss) ---- */
+  function updateTimerDom(remaining, item){
+    var d = document.getElementById("timerDigits");
+    if(d) d.textContent = fmtTime(remaining);
+    var ring = document.getElementById("ringFill");
+    if(ring && item){
+      var pct = item.seconds > 0 ? Math.max(0, Math.min(100, (remaining/item.seconds)*100)) : 0;
+      ring.style.width = pct + "%";
+    }
+  }
+  function updateRepsStopwatchDom(elapsed){
+    var el = document.getElementById("repsStopwatch");
+    if(el) el.textContent = fmtTime(elapsed);
+  }
+  function updateTotalElapsedDom(){
+    var el = document.getElementById("totalElapsed");
+    if(el) el.textContent = fmtTime(player.totalElapsed) + " / " + fmtTime(player.totalPlanned);
+    var track = document.getElementById("overallFill");
+    if(track && player.totalPlanned>0){
+      track.style.width = Math.min(100,(player.totalElapsed/player.totalPlanned)*100) + "%";
+    }
+  }
+  function renderPlayerLive(){
+    // re-render only the parts that depend on toggles (voice/sound) without disturbing timer
+    if(view === "player") render();
+  }
+
+  /* ============ event delegation ============ */
+  app.addEventListener("click", function(e){
+    var t = e.target.closest("[data-action]");
+    if(!t) return;
+    var action = t.getAttribute("data-action");
+    var id = t.getAttribute("data-id");
+    var stepId = t.getAttribute("data-step");
+
+    if(action === "new-routine"){
+      var r = { id:uid(), name:"Nueva rutina", targetMinutes:null, steps:[] };
+      state.routines.push(r);
+      persist();
+      go("editor", { editingId:r.id });
+    }else if(action === "edit-routine"){
+      go("editor", { editingId:id });
+    }else if(action === "start-routine"){
+      startWorkout(id);
+    }else if(action === "duplicate-routine"){
+      var src = findRoutine(id);
+      if(src){
+        var copy = JSON.parse(JSON.stringify(src));
+        copy.id = uid();
+        copy.name = src.name + " (copia)";
+        copy.steps.forEach(function(s){ s.id = uid(); });
+        state.routines.push(copy);
+        persist();
+        render();
+      }
+    }else if(action === "delete-routine"){
+      if(window.confirm("¿Eliminar esta rutina? No se puede deshacer.")){
+        state.routines = state.routines.filter(function(r){ return r.id !== id; });
+        persist();
+        render();
+      }
+    }else if(action === "back-home"){
+      go("home");
+    }else if(action === "add-step"){
+      var routine = findRoutine(editingId);
+      if(routine){ routine.steps.push(defaultStep({})); persist(); render(); }
+    }else if(action === "remove-step"){
+      var routine2 = findRoutine(editingId);
+      if(routine2){ routine2.steps = routine2.steps.filter(function(s){ return s.id !== stepId; }); persist(); render(); }
+    }else if(action === "duplicate-step"){
+      var routine3 = findRoutine(editingId);
+      if(routine3){
+        var idx = routine3.steps.findIndex(function(s){ return s.id === stepId; });
+        if(idx > -1){
+          var copyStep = JSON.parse(JSON.stringify(routine3.steps[idx]));
+          copyStep.id = uid();
+          routine3.steps.splice(idx+1,0,copyStep);
+          persist(); render();
+        }
+      }
+    }else if(action === "move-step"){
+      var dir = t.getAttribute("data-dir");
+      var routine4 = findRoutine(editingId);
+      if(routine4){
+        var i2 = routine4.steps.findIndex(function(s){ return s.id === stepId; });
+        var j = dir === "up" ? i2-1 : i2+1;
+        if(i2>-1 && j>-1 && j<routine4.steps.length){
+          var tmp = routine4.steps[i2];
+          routine4.steps[i2] = routine4.steps[j];
+          routine4.steps[j] = tmp;
+          persist(); render();
+        }
+      }
+    }else if(action === "set-type"){
+      var routine5 = findRoutine(editingId);
+      var step5 = routine5 && routine5.steps.find(function(s){ return s.id === stepId; });
+      if(step5){ step5.type = t.getAttribute("data-type"); persist(); render(); }
+    }else if(action === "chip"){
+      var field = t.getAttribute("data-field");
+      var val = Number(t.getAttribute("data-val"));
+      var routine6 = findRoutine(editingId);
+      var step6 = routine6 && routine6.steps.find(function(s){ return s.id === stepId; });
+      if(step6){ step6[field] = val; persist(); render(); }
+    }else if(action === "start-from-player"){
+      // no-op placeholder
+    }else if(action === "pause"){ pausePlayer(); render(); }
+    else if(action === "resume"){ resumePlayer(); }
+    else if(action === "skip"){ skipStep(); }
+    else if(action === "prev"){ prevStep(); }
+    else if(action === "confirm-done"){ confirmDone(); }
+    else if(action === "exit-workout"){ exitWorkout(); }
+    else if(action === "toggle-voice"){ toggleVoice(); }
+    else if(action === "toggle-sound"){ state.settings.sound = !state.settings.sound; persist(); render(); }
+    else if(action === "restart-routine"){ startWorkout(id); }
+    else if(action === "goal-chip"){
+      var routine7 = findRoutine(editingId);
+      if(routine7){ routine7.targetMinutes = Number(t.getAttribute("data-val")); persist(); render(); }
+    }
+  });
+
+  app.addEventListener("input", function(e){
+    var t = e.target;
+    var field = t.getAttribute("data-field");
+    if(!field) return;
+    var stepId = t.getAttribute("data-step");
+    var routine = findRoutine(editingId);
+    if(!routine) return;
+
+    if(field === "routine-name"){
+      routine.name = t.value;
+      persist();
+      return;
+    }
+    if(field === "target-minutes"){
+      routine.targetMinutes = t.value === "" ? null : Number(t.value);
+      persist();
+      updateTotalBarDom(routine);
+      return;
+    }
+    var step = routine.steps.find(function(s){ return s.id === stepId; });
+    if(!step) return;
+    if(field === "name"){ step.name = t.value; persist(); return; }
+    if(field === "seconds" || field === "estSeconds" || field === "reps" || field === "rest"){
+      var num = t.value === "" ? 0 : Number(t.value);
+      step[field] = num;
+      persist();
+      updateTotalBarDom(routine);
+      return;
+    }
+  });
+
+  function updateTotalBarDom(routine){
+    var total = routineTotalSeconds(routine);
+    var timeEl = document.getElementById("totalTimeDisplay");
+    if(timeEl) timeEl.textContent = fmtTime(total);
+    var deltaEl = document.getElementById("deltaPill");
+    if(deltaEl){
+      if(routine.targetMinutes){
+        var deltaSec = total - routine.targetMinutes*60;
+        var abs = Math.abs(deltaSec);
+        var cls = abs<=10 ? "delta-ok" : (abs<=60 ? "delta-mid" : "delta-off");
+        var label = abs<=10 ? "¡Clavado!" : (deltaSec>0 ? "+"+fmtTime(deltaSec) : "-"+fmtTime(abs));
+        deltaEl.className = "delta-pill " + cls;
+        deltaEl.textContent = label;
+        deltaEl.style.display = "";
+      }else{
+        deltaEl.style.display = "none";
+      }
+    }
+  }
+
+  /* ============ rendering ============ */
+  function render(){
+    if(view === "home") app.innerHTML = renderHome();
+    else if(view === "editor") app.innerHTML = renderEditor();
+    else if(view === "player") app.innerHTML = renderPlayer();
+  }
+
+  function renderHome(){
+    var html = "";
+    html += '<div class="screen">';
+    html += '<div class="topbar"><div class="brand"><span class="mark">MARCADOR</span><span class="tag">tu ritmo de gimnasio</span></div></div>';
+
+    if(!state.routines.length){
+      html += '<div class="empty"><span class="mark-big">Aún no hay rutinas</span>Crea tu primera rutina y Marcador irá marcando cada ejercicio y descanso por ti.</div>';
+    }else{
+      html += '<div class="routine-list">';
+      state.routines.forEach(function(r){
+        var total = routineTotalSeconds(r);
+        html += '<div class="card routine-card">';
+        html += '<div class="head"><h3>'+escapeHtml(r.name||"Sin nombre")+'</h3></div>';
+        html += '<div class="meta">'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+' · '+fmtTime(total)+' total'+(r.targetMinutes?' · objetivo '+r.targetMinutes+' min':'')+'</div>';
+        html += '<div class="actions">';
+        html += '<button class="btn btn-primary btn-lg" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+'>▶ Empezar</button>';
+        html += '</div>';
+        html += '<div class="util-row">';
+        html += '<button class="util-link" data-action="edit-routine" data-id="'+r.id+'">Editar</button>';
+        html += '<button class="util-link" data-action="duplicate-routine" data-id="'+r.id+'">Duplicar</button>';
+        html += '<button class="util-link danger" data-action="delete-routine" data-id="'+r.id+'">Eliminar</button>';
+        html += '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    html += '<div class="new-routine-bar"><button class="btn btn-ghost btn-block btn-lg" data-action="new-routine">+ Nueva rutina</button></div>';
+
+    html += '<details class="help"><summary>Cómo funciona</summary><p>Cada ejercicio puede ser <b>por tiempo</b> (cuenta atrás y avisa sola cuando termina) o <b>por repeticiones</b> (tú marcas cuándo has terminado, con el botón o diciendo «hecho»). Entre ejercicios se añade el descanso que definas. El total se calcula solo mientras construyes la rutina, para que puedas ajustarla a los minutos que quieras.</p></details>';
+
+    html += '</div>';
+    return html;
+  }
+
+  function renderEditor(){
+    var routine = findRoutine(editingId);
+    if(!routine){ go("home"); return ""; }
+    var total = routineTotalSeconds(routine);
+    var html = "";
+    html += '<div class="screen">';
+    html += '<div class="topbar"><button class="btn btn-ghost btn-sm" data-action="back-home">‹ Rutinas</button></div>';
+
+    html += '<div class="editor-header">';
+    html += '<input class="name-input" data-field="routine-name" value="'+escapeHtml(routine.name)+'" placeholder="Nombre de la rutina">';
+    html += '</div>';
+
+    html += '<div class="total-bar">';
+    html += '<div><div class="total-label">Duración total</div><div class="total-time" id="totalTimeDisplay">'+fmtTime(total)+'</div></div>';
+    html += '<div class="goal-row">';
+    html += '<div class="total-label">Objetivo (min)</div>';
+    html += '<input class="goal-input" type="number" min="0" data-field="target-minutes" value="'+(routine.targetMinutes!=null?routine.targetMinutes:"")+'" placeholder="—">';
+    var deltaHtml = "";
+    if(routine.targetMinutes){
+      var deltaSec = total - routine.targetMinutes*60;
+      var abs = Math.abs(deltaSec);
+      var cls = abs<=10 ? "delta-ok" : (abs<=60 ? "delta-mid" : "delta-off");
+      var label = abs<=10 ? "¡Clavado!" : (deltaSec>0 ? "+"+fmtTime(deltaSec) : "-"+fmtTime(abs));
+      deltaHtml = '<span class="delta-pill '+cls+'" id="deltaPill">'+label+'</span>';
+    }else{
+      deltaHtml = '<span class="delta-pill" id="deltaPill" style="display:none;"></span>';
+    }
+    html += deltaHtml;
+    html += '</div>'; // goal-row
+    html += '</div>'; // total-bar
+
+    html += '<div class="steps">';
+    routine.steps.forEach(function(step, i){
+      html += renderStepCard(step, i, routine.steps.length);
+    });
+    html += '</div>';
+
+    html += '<div class="add-step-bar"><button class="btn btn-ghost btn-block" data-action="add-step">+ Añadir ejercicio</button></div>';
+
+    html += '<div class="editor-footer"><button class="btn btn-primary btn-block btn-lg" data-action="start-routine" data-id="'+routine.id+'" '+(routine.steps.length?'':'disabled')+'>▶ Empezar esta rutina</button></div>';
+
+    html += '</div>';
+    return html;
+  }
+
+  function chipsRow(field, stepId, current, options){
+    var html = '<div class="chips">';
+    options.forEach(function(v){
+      html += '<button type="button" class="chip'+(Number(current)===v?' active':'')+'" data-action="chip" data-field="'+field+'" data-val="'+v+'" data-step="'+stepId+'">'+(field==='rest'&&v===0?'sin descanso':v)+'</button>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function renderStepCard(step, i, count){
+    var html = '<div class="card step-card">';
+    html += '<div class="step-top">';
+    html += '<span class="step-index">'+(i+1)+'</span>';
+    html += '<input class="step-name" data-field="name" data-step="'+step.id+'" value="'+escapeHtml(step.name)+'" placeholder="Nombre del ejercicio">';
+    html += '</div>';
+
+    html += '<div class="seg-toggle">';
+    html += '<button type="button" class="'+(step.type==='time'?'active type-time':'')+'" data-action="set-type" data-type="time" data-step="'+step.id+'">Tiempo</button>';
+    html += '<button type="button" class="'+(step.type==='reps'?'active type-reps':'')+'" data-action="set-type" data-type="reps" data-step="'+step.id+'">Repeticiones</button>';
+    html += '</div>';
+
+    if(step.type === "time"){
+      html += '<div class="field-row"><div class="field"><label>Duración (segundos)</label>';
+      html += '<input type="number" min="1" data-field="seconds" data-step="'+step.id+'" value="'+step.seconds+'">';
+      html += chipsRow("seconds", step.id, step.seconds, [15,20,30,45,60,90,120]);
+      html += '</div></div>';
+    }else{
+      html += '<div class="field-row">';
+      html += '<div class="field"><label>Repeticiones</label>';
+      html += '<input type="number" min="0" data-field="reps" data-step="'+step.id+'" value="'+step.reps+'">';
+      html += '</div>';
+      html += '</div>';
+      html += '<div class="field-row"><div class="field"><label>Tiempo estimado (para el total)</label>';
+      html += '<input type="number" min="1" data-field="estSeconds" data-step="'+step.id+'" value="'+step.estSeconds+'">';
+      html += chipsRow("estSeconds", step.id, step.estSeconds, [20,30,40,60,90]);
+      html += '</div></div>';
+    }
+
+    html += '<div class="field-row"><div class="field"><label>Descanso después (segundos)</label>';
+    html += '<input type="number" min="0" data-field="rest" data-step="'+step.id+'" value="'+step.rest+'">';
+    html += chipsRow("rest", step.id, step.rest, [0,10,15,20,30,45,60]);
+    html += '</div></div>';
+
+    html += '<div class="step-bottom">';
+    html += '<div class="step-tools">';
+    html += '<button class="tool-btn" data-action="move-step" data-dir="up" data-step="'+step.id+'" '+(i===0?'disabled':'')+' title="Subir">▲</button>';
+    html += '<button class="tool-btn" data-action="move-step" data-dir="down" data-step="'+step.id+'" '+(i===count-1?'disabled':'')+' title="Bajar">▼</button>';
+    html += '<button class="tool-btn" data-action="duplicate-step" data-step="'+step.id+'" title="Duplicar">⧉</button>';
+    html += '</div>';
+    html += '<button class="tool-btn remove" data-action="remove-step" data-step="'+step.id+'" title="Eliminar">✕</button>';
+    html += '</div>';
+
+    html += '</div>';
+    return html;
+  }
+
+  function renderPlayer(){
+    if(player.phase === "done"){
+      var routine = player.routine;
+      var html = '<div class="summary">';
+      html += '<div class="phase-pill done">Completado</div>';
+      html += '<h2 class="big-check">¡Entrenamiento completado!</h2>';
+      html += '<div class="sub">'+escapeHtml(routine?routine.name:"")+'</div>';
+      html += '<div class="stat">'+fmtTime(player.totalElapsed)+'</div>';
+      html += '<div class="sub">tiempo total</div>';
+      html += '<div class="actions">';
+      html += '<button class="btn btn-ghost btn-lg" data-action="back-home">Inicio</button>';
+      html += '<button class="btn btn-primary btn-lg" data-action="restart-routine" data-id="'+(routine?routine.id:"")+'">Repetir</button>';
+      html += '</div>';
+      html += '</div>';
+      return html;
+    }
+
+    var item = currentItem();
+    if(!item) return "";
+    var isRest = item.kind === "rest";
+    var isTimed = isRest || item.type === "time";
+    var routine = player.routine;
+    var stepNumber = player.queue.slice(0, player.index+1).filter(function(q){return q.kind==="exercise";}).length;
+    var exerciseCount = routine.steps.length;
+
+    var html = '<div class="player">';
+
+    html += '<div class="player-top">';
+    html += '<button class="player-exit" data-action="exit-workout">‹ Salir</button>';
+    html += '<span class="player-title">'+escapeHtml(routine.name)+'</span>';
+    html += '<span class="player-total" id="totalElapsed">'+fmtTime(player.totalElapsed)+' / '+fmtTime(player.totalPlanned)+'</span>';
+    html += '</div>';
+
+    var overallPct = player.totalPlanned>0 ? Math.min(100,(player.totalElapsed/player.totalPlanned)*100) : 0;
+    html += '<div class="progress-track"><div class="progress-fill" id="overallFill" style="width:'+overallPct+'%"></div></div>';
+    html += '<div class="step-of">Ejercicio '+Math.max(1,stepNumber)+' de '+exerciseCount+'</div>';
+
+    html += '<div class="hero">';
+    html += '<span class="phase-pill '+(isRest?'rest':'work')+'">'+(isRest?"Descanso":"Ejercicio")+'</span>';
+
+    if(isRest){
+      html += '<h2 class="exercise-name">Descanso</h2>';
+    }else{
+      html += '<h2 class="exercise-name">'+escapeHtml(item.name)+'</h2>';
+    }
+
+    if(isTimed){
+      var pct = item.seconds>0 ? Math.max(0,Math.min(100,(player.remaining/item.seconds)*100)) : 0;
+      html += '<div class="timer-digits '+(isRest?'rest':'work')+'" id="timerDigits">'+fmtTime(player.remaining)+'</div>';
+      html += '<div class="ring-track"><div class="ring-fill '+(isRest?'rest':'work')+'" id="ringFill" style="width:'+pct+'%"></div></div>';
+    }else{
+      html += '<div class="reps-block">';
+      html += '<div class="reps-number">'+(item.reps||"—")+'</div>';
+      html += '<div class="reps-label">repeticiones</div>';
+      html += '<div class="reps-stopwatch" id="repsStopwatch">'+fmtTime(player.repsElapsed)+'</div>';
+      html += '<div class="reps-hint">Pulsa «Hecho»'+(state.settings.voice?' o di «hecho»':'')+' al terminar</div>';
+      html += '</div>';
+    }
+
+    if(isRest && item.nextName){
+      html += '<div class="next-up">Siguiente: <b>'+escapeHtml(item.nextName)+'</b></div>';
+    }
+
+    html += '</div>'; // hero
+
+    html += '<div class="controls">';
+
+    if(!isTimed){
+      html += '<div class="done-btn-wrap"><button class="btn btn-go btn-block btn-lg" data-action="confirm-done">✓ Hecho</button></div>';
+    }
+
+    html += '<div class="transport">';
+    html += '<button class="btn btn-ghost btn-icon" data-action="prev" '+(player.index<=0?'disabled':'')+' title="Anterior">‹</button>';
+    if(player.phase === "running"){
+      html += '<button class="btn btn-primary btn-lg" data-action="pause">⏸ Pausar</button>';
+    }else{
+      html += '<button class="btn btn-primary btn-lg" data-action="resume">▶ Reanudar</button>';
+    }
+    html += '<button class="btn btn-ghost btn-icon" data-action="skip" title="Saltar">›</button>';
+    html += '</div>';
+
+    html += '<div class="util-controls">';
+    var voiceClass = "toggle-pill";
+    var voiceLabel = "Voz";
+    var voiceDotOn = false;
+    if(!voiceSupported){ voiceClass += " error"; voiceLabel = "Voz no disp."; }
+    else if(voiceError){ voiceClass += " error"; voiceLabel = "Voz: error"; }
+    else if(state.settings.voice && voiceListening){ voiceClass += " listening"; voiceLabel = "Escuchando"; voiceDotOn = true; }
+    else if(state.settings.voice && !voiceListening){ voiceClass += " on"; voiceLabel = "Activando…"; }
+    html += '<button class="'+voiceClass+'" data-action="toggle-voice" '+(!voiceSupported?'disabled':'')+'><span class="dot '+(voiceDotOn?'listening':'')+'"></span>🎤 '+voiceLabel+'</button>';
+    html += '<button class="toggle-pill '+(state.settings.sound?'on':'')+'" data-action="toggle-sound"><span class="dot '+(state.settings.sound?'on':'')+'"></span>'+(state.settings.sound?'🔔 Sonido':'🔕 Silencio')+'</button>';
+    html += '</div>';
+
+    if(voiceSupported){
+      html += '<div class="voice-note">Di «hecho» para confirmar un ejercicio de repeticiones, o «pausa» / «continúa» para el temporizador.'+(voiceError?' '+voiceError:'')+'</div>';
+    }
+
+    html += '<div class="end-link"><button data-action="exit-workout">Terminar entrenamiento</button></div>';
+
+    html += '</div>'; // controls
+
+    html += '</div>'; // player
+    return html;
+  }
+
+  /* ============ init ============ */
+  render();
+})();
 </script>
 </body>
 </html>
