@@ -142,9 +142,11 @@
   /* ---------- home ---------- */
   .routine-list{ display:flex; flex-direction:column; gap:12px; padding:6px 18px 18px; }
   .routine-card{ display:flex; flex-direction:column; gap:12px; }
-  .routine-card .head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .routine-card .head{ display:flex; align-items:center; justify-content:flex-start; gap:10px; }
   .routine-card h3{ font-size:24px; color:var(--chalk); }
   .routine-card .meta{ color:var(--muted); font-size:13px; font-variant-numeric:tabular-nums; }
+  .routine-card{ border-left:4px solid var(--accent, var(--rest)); }
+  .routine-card .head .dot-accent{ width:9px; height:9px; border-radius:50%; background:var(--accent, var(--rest)); flex-shrink:0; }
   .routine-card .actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .routine-card .actions .btn{ flex:1; }
   .routine-card .util-row{ display:flex; gap:14px; }
@@ -308,6 +310,16 @@
   .dot.on{ background:var(--go); box-shadow:0 0 0 3px var(--go-soft); }
   .dot.listening{ background:var(--rest); animation:pulse-dot 1.2s ease-in-out infinite; }
 
+  .voice-wave{ display:inline-flex; align-items:flex-end; gap:2px; height:12px; }
+  .voice-wave i{ width:2.5px; background:var(--rest); border-radius:1px; display:block; animation:wave-bar 0.9s ease-in-out infinite; }
+  .voice-wave i:nth-child(1){ animation-delay:0s; }
+  .voice-wave i:nth-child(2){ animation-delay:0.15s; }
+  .voice-wave i:nth-child(3){ animation-delay:0.3s; }
+  .voice-wave i:nth-child(4){ animation-delay:0.45s; }
+  @keyframes wave-bar{ 0%,100%{ height:3px; } 50%{ height:12px; } }
+
+  @keyframes digit-tick{ 0%{ transform:scale(1); } 40%{ transform:scale(1.045); } 100%{ transform:scale(1); } }
+
   .voice-note{ text-align:center; font-size:11.5px; color:var(--muted-2); padding:0 30px; }
 
   .end-link{ text-align:center; padding:10px 0 2px; }
@@ -341,7 +353,7 @@
   @keyframes pulse-dot{ 0%,100%{ box-shadow:0 0 0 0 var(--rest-soft);} 50%{ box-shadow:0 0 0 6px var(--rest-soft);} }
 
   @media (prefers-reduced-motion: reduce){
-    .flash-overlay.flashing, .flash-overlay.flashing .flash-word, .dot.listening{ animation:none !important; }
+    .flash-overlay.flashing, .flash-overlay.flashing .flash-word, .dot.listening, .voice-wave i, .timer-digits{ animation:none !important; }
   }
 
   .help{ margin:0 18px 14px; }
@@ -482,6 +494,11 @@
       return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
     });
   }
+
+  /* each saved routine gets a stable accent color from this palette, cycling by
+     position in the list — a quick visual way to tell routines apart at a glance */
+  var ROUTINE_ACCENTS = ["#ff5a36","#33c7c1","#ffcf5c","#8bd450","#5ccfe6","#ff8a5c"];
+  function routineAccent(index){ return ROUTINE_ACCENTS[index % ROUTINE_ACCENTS.length]; }
 
   /* ============ view / routing ============ */
   var view = "home";          // 'home' | 'editor' | 'player'
@@ -881,7 +898,12 @@
   /* ---- cheap DOM updates during ticking (avoid full re-render / focus loss) ---- */
   function updateTimerDom(remaining, item){
     var d = document.getElementById("timerDigits");
-    if(d) d.textContent = fmtTime(remaining);
+    if(d){
+      d.textContent = fmtTime(remaining);
+      d.style.animation = "none";
+      void d.offsetWidth; // restart the tick animation every second
+      d.style.animation = "digit-tick .25s ease-out";
+    }
     var ring = document.getElementById("ringFill");
     if(ring && item){
       var pct = item.seconds > 0 ? Math.max(0, Math.min(100, (remaining/item.seconds)*100)) : 0;
@@ -1073,10 +1095,11 @@
       html += '<div class="empty"><span class="mark-big">Aún no hay rutinas</span>Crea tu primera rutina y Marcador irá marcando cada ejercicio y descanso por ti.</div>';
     }else{
       html += '<div class="routine-list">';
-      state.routines.forEach(function(r){
+      state.routines.forEach(function(r, ri){
         var total = routineTotalSeconds(r);
-        html += '<div class="card routine-card">';
-        html += '<div class="head"><h3>'+escapeHtml(r.name||"Sin nombre")+'</h3></div>';
+        var accent = routineAccent(ri);
+        html += '<div class="card routine-card" style="--accent:'+accent+'">';
+        html += '<div class="head"><span class="dot-accent"></span><h3>'+escapeHtml(r.name||"Sin nombre")+'</h3></div>';
         var roundsN = Math.max(1, Number(r.rounds)||1);
         html += '<div class="meta">'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+(roundsN>1?' · '+roundsN+' vueltas':'')+' · '+fmtTime(total)+' total'+(r.targetMinutes?' · objetivo '+r.targetMinutes+' min':'')+'</div>';
         html += '<div class="actions">';
@@ -1304,7 +1327,10 @@
     else if(voiceError){ voiceClass += " error"; voiceLabel = "Voz: error"; }
     else if(state.settings.voice && voiceListening){ voiceClass += " listening"; voiceLabel = "Escuchando"; voiceDotOn = true; }
     else if(state.settings.voice && !voiceListening){ voiceClass += " on"; voiceLabel = "Activando…"; }
-    html += '<button class="'+voiceClass+'" data-action="toggle-voice" '+(!voiceSupported?'disabled':'')+'><span class="dot '+(voiceDotOn?'listening':'')+'"></span>🎤 '+voiceLabel+'</button>';
+    var voiceIndicator = voiceDotOn
+      ? '<span class="voice-wave"><i></i><i></i><i></i><i></i></span>'
+      : '<span class="dot"></span>';
+    html += '<button class="'+voiceClass+'" data-action="toggle-voice" '+(!voiceSupported?'disabled':'')+'>'+voiceIndicator+' 🎤 '+voiceLabel+'</button>';
     html += '<button class="toggle-pill '+(state.settings.sound?'on':'')+'" data-action="toggle-sound"><span class="dot '+(state.settings.sound?'on':'')+'"></span>'+(state.settings.sound?'🔔 Sonido':'🔕 Silencio')+'</button>';
     html += '</div>';
 
