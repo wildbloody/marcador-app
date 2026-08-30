@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Marcador</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore-compat.js"></script>
 <style>
   :root{
     color-scheme: dark;
@@ -188,6 +190,22 @@
   .util-link.danger{ color:#a85246; }
 
   .new-routine-bar{ padding:6px 18px 18px; }
+
+  /* ---------- sync (cloud) ---------- */
+  .sync-box{ margin:0 18px 14px; display:flex; flex-direction:column; gap:10px; }
+  .sync-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .sync-code{ font-family:var(--font-mono); font-size:22px; letter-spacing:0.12em; color:var(--rest); font-weight:700; }
+  .sync-hint{ color:var(--muted-2); font-size:12.5px; line-height:1.4; }
+  .sync-link-row{ display:flex; gap:8px; }
+  .sync-input{
+    flex:1; min-width:0; background:var(--panel-2); border:1px solid var(--line); color:var(--chalk);
+    border-radius:8px; padding:9px 10px; font-family:var(--font-mono); text-transform:uppercase;
+    letter-spacing:0.08em; font-size:14px;
+  }
+  .sync-input::placeholder{ text-transform:none; letter-spacing:normal; color:var(--muted-2); }
+  .sync-status{ font-size:12px; color:var(--muted-2); min-height:14px; }
+  .sync-status.ok{ color:var(--go); }
+  .sync-status.error{ color:var(--work); }
 
   /* ---------- editor ---------- */
   .editor-header{ padding:0 18px 12px; display:flex; flex-direction:column; gap:10px; }
@@ -511,6 +529,106 @@
 
   function persist(){
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+    scheduleCloudSave();
+  }
+
+  /* ============ sync (código de sincronización, sin cuentas) ============
+     Cada dispositivo genera un código corto y lo guarda localmente. Las
+     rutinas se respaldan en Firestore bajo ese código; introducir el mismo
+     código en otro dispositivo trae aquí esas rutinas. Conocer el código
+     es lo único que hace falta para acceder a esos datos -- no hay login. */
+  var firebaseConfig = {
+    apiKey: "AIzaSyB69GQjfopRgCT83VAwgr5Fl09EBhzGHAY",
+    authDomain: "marcador-app-4b393.firebaseapp.com",
+    projectId: "marcador-app-4b393",
+    storageBucket: "marcador-app-4b393.firebasestorage.app",
+    messagingSenderId: "976928504606",
+    appId: "1:976928504606:web:9f41b776762c155719670f"
+  };
+  var syncDb = null;
+  var syncEnabled = false;
+  try{
+    if(window.firebase){
+      firebase.initializeApp(firebaseConfig);
+      syncDb = firebase.firestore();
+      syncEnabled = true;
+    }
+  }catch(e){ syncEnabled = false; }
+
+  var SYNC_CODE_KEY = "marcador_sync_code";
+  var syncCode = null;
+  var syncStatus = "idle"; // idle | saving | ok | error
+  var syncSaveTimer = null;
+
+  function genSyncCode(){
+    var alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // sin caracteres ambiguos (0/O, 1/I)
+    var out = "";
+    for(var i=0;i<6;i++) out += alphabet[Math.floor(Math.random()*alphabet.length)];
+    return out;
+  }
+
+  function ensureSyncCode(){
+    try{
+      var existing = localStorage.getItem(SYNC_CODE_KEY);
+      if(existing){ syncCode = existing; return; }
+    }catch(e){}
+    syncCode = genSyncCode();
+    try{ localStorage.setItem(SYNC_CODE_KEY, syncCode); }catch(e){}
+  }
+
+  function setSyncStatus(s){
+    syncStatus = s;
+    var el = document.getElementById("syncStatusText");
+    if(!el) return;
+    el.className = "sync-status" + (s==="ok" ? " ok" : s==="error" ? " error" : "");
+    el.textContent = s==="saving" ? "Guardando en la nube…" : s==="ok" ? "Copia en la nube al día" : s==="error" ? "No se pudo guardar en la nube" : "";
+  }
+
+  function pushToCloud(){
+    if(!syncEnabled || !syncCode || !syncDb) return;
+    setSyncStatus("saving");
+    syncDb.collection("syncCodes").doc(syncCode).set({
+      routines: state.routines,
+      settings: state.settings,
+      updatedAt: Date.now()
+    }).then(function(){ setSyncStatus("ok"); }).catch(function(){ setSyncStatus("error"); });
+  }
+
+  function scheduleCloudSave(){
+    if(!syncEnabled) return;
+    if(syncSaveTimer) clearTimeout(syncSaveTimer);
+    syncSaveTimer = setTimeout(pushToCloud, 900);
+  }
+
+  function linkSyncCode(rawCode){
+    var code = (rawCode||"").trim().toUpperCase();
+    if(!code){ return; }
+    if(!syncEnabled || !syncDb){
+      window.alert("La sincronización no está disponible ahora mismo.");
+      return;
+    }
+    syncDb.collection("syncCodes").doc(code).get().then(function(doc){
+      if(doc.exists){
+        var data = doc.data();
+        if(data && data.routines && data.routines.length){
+          state.routines = data.routines;
+          state.settings = Object.assign({ sound:true, vibration:true, voice:false }, data.settings||{});
+          try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+        }
+        syncCode = code;
+        try{ localStorage.setItem(SYNC_CODE_KEY, syncCode); }catch(e){}
+        render();
+        window.alert("Rutinas sincronizadas con el código "+code+".");
+      }else{
+        syncCode = code;
+        try{ localStorage.setItem(SYNC_CODE_KEY, syncCode); }catch(e){}
+        pushToCloud();
+        render();
+        window.alert("Ese código todavía no tenía rutinas guardadas. A partir de ahora, este dispositivo usará el código "+code+".");
+      }
+    }).catch(function(){
+      window.alert("No se pudo conectar con la nube. Comprueba tu conexión e inténtalo de nuevo.");
+    });
   }
 
   /* ============ helpers ============ */
@@ -1065,6 +1183,14 @@
     else if(action === "goal-chip"){
       var routine7 = findRoutine(editingId);
       if(routine7){ routine7.targetMinutes = Number(t.getAttribute("data-val")); persist(); render(); }
+    }else if(action === "copy-sync-code"){
+      if(syncCode && navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(syncCode).catch(function(){});
+      }
+      window.alert("Código copiado: "+syncCode);
+    }else if(action === "link-sync-code"){
+      var codeInput = document.getElementById("syncCodeInput");
+      linkSyncCode(codeInput ? codeInput.value : "");
     }
   });
 
@@ -1132,6 +1258,7 @@
     if(view === "home") app.innerHTML = renderHome();
     else if(view === "editor") app.innerHTML = renderEditor();
     else if(view === "player") app.innerHTML = renderPlayer();
+    if(view === "home") setSyncStatus(syncStatus);
   }
 
   function renderHome(){
@@ -1164,6 +1291,13 @@
     }
 
     html += '<div class="new-routine-bar"><button class="btn btn-ghost btn-block btn-lg" data-action="new-routine">+ Nueva rutina</button></div>';
+
+    html += '<div class="card sync-box">';
+    html += '<div class="sync-row"><div><div class="total-label">Tu código de sincronización</div><div class="sync-code">'+escapeHtml(syncCode||"—")+'</div></div><button class="btn btn-ghost btn-sm" data-action="copy-sync-code">Copiar</button></div>';
+    html += '<div class="sync-hint">Apunta este código y guárdalo. Introdúcelo en otro dispositivo (móvil, tablet, ordenador) para traerte aquí las mismas rutinas.</div>';
+    html += '<div class="sync-link-row"><input class="sync-input" id="syncCodeInput" maxlength="10" placeholder="Código de otro dispositivo"><button class="btn btn-primary btn-sm" data-action="link-sync-code">Vincular</button></div>';
+    html += '<div class="sync-status" id="syncStatusText"></div>';
+    html += '</div>';
 
     html += '<details class="help"><summary>Cómo funciona</summary><p>Cada ejercicio puede ser <b>por tiempo</b> (cuenta atrás y avisa sola cuando termina) o <b>por repeticiones</b> (tú marcas cuándo has terminado, con el botón o diciendo «hecho»). Entre ejercicios se añade el descanso que definas. El total se calcula solo mientras construyes la rutina, para que puedas ajustarla a los minutos que quieras.</p></details>';
 
@@ -1398,7 +1532,9 @@
   }
 
   /* ============ init ============ */
+  ensureSyncCode();
   render();
+  pushToCloud();
 })();
 </script>
 </body>
