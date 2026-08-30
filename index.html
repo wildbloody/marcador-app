@@ -85,6 +85,39 @@
     letter-spacing:0.12em;
   }
 
+  /* home screen wordmark: centered, stacked, with a small accent underline
+     so it reads as a logo lockup instead of a plain left-aligned label */
+  .topbar-home{
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:28px 18px 18px;
+    gap:0;
+  }
+  .topbar-home .brand{
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+  }
+  .topbar-home .brand .mark{
+    font-size:38px;
+    letter-spacing:0.08em;
+    position:relative;
+    padding-bottom:10px;
+  }
+  .topbar-home .brand .mark:after{
+    content:"";
+    position:absolute;
+    left:50%; bottom:0;
+    transform:translateX(-50%);
+    width:48px; height:3px;
+    border-radius:999px;
+    background:var(--rest);
+  }
+  .topbar-home .brand .tag{
+    letter-spacing:0.18em;
+  }
+
   .btn{
     appearance:none;
     border:1px solid var(--line);
@@ -249,14 +282,32 @@
 
   /* ---------- player ---------- */
   .player{ flex:1; display:flex; flex-direction:column; }
-  .player-top{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px 6px; }
-  .player-exit{ background:none; border:none; color:var(--muted-2); font-size:13px; cursor:pointer; padding:6px; }
-  .player-title{ color:var(--muted); font-size:13px; font-weight:600; }
-  .player-total{ font-family:var(--font-mono); color:var(--muted-2); font-size:13px; font-variant-numeric:tabular-nums; }
+  .player-header{
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    padding:16px 18px 14px;
+    text-align:center;
+  }
+  .player-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:0 0 12px; }
+  .player-exit{ background:none; border:none; color:var(--muted-2); font-size:13px; cursor:pointer; padding:6px; flex-shrink:0; }
+  .player-title{
+    flex:1; text-align:center; font-family:var(--font-display);
+    font-size:19px; letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--accent, var(--chalk));
+  }
+  .player-total{
+    font-family:var(--font-mono); color:var(--chalk); font-size:12.5px; font-variant-numeric:tabular-nums;
+    background:var(--panel-2); border:1px solid var(--line); padding:5px 10px; border-radius:999px; flex-shrink:0;
+  }
 
-  .progress-track{ height:4px; background:var(--panel-2); margin:6px 18px 0; border-radius:999px; overflow:hidden; }
-  .progress-fill{ height:100%; background:var(--rest); border-radius:999px; transition:width .3s linear; }
-  .step-of{ text-align:center; font-size:12px; color:var(--muted-2); padding:8px 0 0; font-variant-numeric:tabular-nums; }
+  .progress-track{ height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--accent, var(--rest)); border-radius:999px; transition:width .3s linear; }
+  .step-of{
+    display:inline-block; margin-top:10px; padding:5px 14px;
+    border:1px solid var(--accent, var(--line)); border-radius:999px;
+    color:var(--accent, var(--muted-2)); font-size:11.5px; font-weight:700;
+    letter-spacing:0.08em; text-transform:uppercase; font-variant-numeric:tabular-nums;
+  }
 
   .hero{
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -723,6 +774,7 @@
   /* ============ player state machine ============ */
   var player = {
     routine: null,
+    accent: null,       // same accent color as this routine's card on the home screen
     queue: [],
     index: -1,
     phase: "idle",      // idle | running | paused | done
@@ -777,6 +829,7 @@
     ensureAudio();
     setupRecognition();
     player.routine = routine;
+    player.accent = routineAccent(Math.max(0, state.routines.indexOf(routine)));
     player.queue = buildQueue(routine);
     player.index = -1;
     player.totalPlanned = routineTotalSeconds(routine);
@@ -1089,7 +1142,7 @@
   function renderHome(){
     var html = "";
     html += '<div class="screen">';
-    html += '<div class="topbar"><div class="brand"><span class="mark">MARCADOR</span><span class="tag">tu ritmo de gimnasio</span></div></div>';
+    html += '<div class="topbar topbar-home"><div class="brand"><span class="mark">MARCADOR</span><span class="tag">tu ritmo de gimnasio</span></div></div>';
 
     if(!state.routines.length){
       html += '<div class="empty"><span class="mark-big">Aún no hay rutinas</span>Crea tu primera rutina y Marcador irá marcando cada ejercicio y descanso por ti.</div>';
@@ -1263,8 +1316,10 @@
       if(item.roundsTotal && item.roundsTotal>1) stepOfExtra += " · Vuelta "+item.roundIndex+"/"+item.roundsTotal;
     }
 
+    var accent = player.accent || ROUTINE_ACCENTS[0];
     var html = '<div class="player">';
 
+    html += '<div class="player-header" style="--accent:'+accent+'">';
     html += '<div class="player-top">';
     html += '<button class="player-exit" data-action="exit-workout">‹ Salir</button>';
     html += '<span class="player-title">'+escapeHtml(routine.name)+'</span>';
@@ -1274,6 +1329,7 @@
     var overallPct = player.totalPlanned>0 ? Math.min(100,(player.totalElapsed/player.totalPlanned)*100) : 0;
     html += '<div class="progress-track"><div class="progress-fill" id="overallFill" style="width:'+overallPct+'%"></div></div>';
     html += '<div class="step-of">Ejercicio '+Math.max(1,stepNumber)+' de '+exerciseCount+stepOfExtra+'</div>';
+    html += '</div>'; // player-header
 
     html += '<div class="hero">';
     html += '<span class="phase-pill '+(isRest?'rest':'work')+'">'+(isRest?"Descanso":"Ejercicio")+'</span>';
