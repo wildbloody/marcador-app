@@ -778,6 +778,8 @@
   var voiceError = "";
   var voiceListening = false;   // true only once the browser has actually confirmed it is capturing audio
   var voiceWatchdog = null;
+  var voiceRestartTimer = null;
+  var voiceEndTimestamps = [];  // recent onend times, used to detect a restart loop
 
   function setupRecognition(){
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -822,12 +824,31 @@
         voiceListening = false;
         // keep listening through a pause too, so "continúa" said out loud can resume it
         if(state.settings.voice && (player.phase === "running" || player.phase === "paused")){
-          try{ recognition.start(); }catch(e){
+          var now = Date.now();
+          voiceEndTimestamps = voiceEndTimestamps.filter(function(t){ return now - t < 10000; });
+          voiceEndTimestamps.push(now);
+          if(voiceEndTimestamps.length >= 4){
+            // some browsers (often Android Chrome) keep closing the mic session every couple of
+            // seconds on their own; restarting instantly just re-triggers the mic's own "listening"
+            // beep in a loop, so give up instead of pitando sin parar
+            voiceEndTimestamps = [];
             state.settings.voice = false;
-            voiceError = "No se pudo reactivar el micrófono.";
+            voiceError = "Tu navegador cierra el micrófono muy seguido aquí, así que se desactivó el control por voz para que no siga pitando.";
             persist();
             renderPlayerLive();
+            return;
           }
+          if(voiceRestartTimer) clearTimeout(voiceRestartTimer);
+          voiceRestartTimer = setTimeout(function(){
+            voiceRestartTimer = null;
+            if(!(state.settings.voice && (player.phase === "running" || player.phase === "paused"))) return;
+            try{ recognition.start(); }catch(e){
+              state.settings.voice = false;
+              voiceError = "No se pudo reactivar el micrófono.";
+              persist();
+              renderPlayerLive();
+            }
+          }, 500);
         }
       };
     }catch(e){ voiceSupported = false; }
@@ -860,6 +881,8 @@
     voiceError = "";
     persist();
     if(voiceWatchdog){ clearTimeout(voiceWatchdog); voiceWatchdog = null; }
+    if(voiceRestartTimer){ clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+    voiceEndTimestamps = [];
     if(state.settings.voice){
       voiceListening = false;
       try{
@@ -1045,6 +1068,8 @@
     player.phase = "done";
     if(player.intervalId){ clearInterval(player.intervalId); player.intervalId = null; }
     releaseWakeLock();
+    if(voiceRestartTimer){ clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+    voiceEndTimestamps = [];
     if(recognition){ try{ recognition.stop(); }catch(e){} }
     render();
   }
@@ -1056,6 +1081,8 @@
     }
     if(player.intervalId){ clearInterval(player.intervalId); player.intervalId = null; }
     releaseWakeLock();
+    if(voiceRestartTimer){ clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
+    voiceEndTimestamps = [];
     if(recognition){ try{ recognition.stop(); }catch(e){} }
     player.phase = "idle";
     go("home");
