@@ -247,6 +247,14 @@
   .delta-mid{ background:var(--warn-soft); color:var(--warn); }
   .delta-off{ background:var(--work-soft); color:var(--work); }
 
+  .history-box{ margin:0 18px 14px; display:flex; flex-direction:column; gap:8px; }
+  .history-list{ display:flex; flex-direction:column; }
+  .history-row{ display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--muted); padding:6px 0; border-bottom:1px solid var(--line-soft); }
+  .history-row:last-child{ border-bottom:none; }
+  .history-row.best{ color:var(--chalk); font-weight:600; }
+  .history-date{ color:var(--muted-2); font-variant-numeric:tabular-nums; }
+  .history-time{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+
   .steps{ display:flex; flex-direction:column; gap:10px; padding:0 18px; }
   .step-card{ display:flex; flex-direction:column; gap:12px; }
   .step-top{ display:flex; align-items:center; gap:10px; }
@@ -639,6 +647,11 @@
     return (m<10?"0":"")+m+":"+(s<10?"0":"")+s;
   }
 
+  function fmtDate(ts){
+    try{ return new Date(ts).toLocaleDateString("es-ES", { day:"2-digit", month:"short" }); }
+    catch(e){ return ""; }
+  }
+
   function stepOwnSeconds(step){
     return step.type === "time" ? (Number(step.seconds)||0) : (Number(step.estSeconds)||0);
   }
@@ -778,8 +791,6 @@
   var voiceError = "";
   var voiceListening = false;   // true only once the browser has actually confirmed it is capturing audio
   var voiceWatchdog = null;
-  var voiceRestartTimer = null;
-  var voiceEndTimestamps = [];  // recent onend times, used to detect a restart loop
 
   function setupRecognition(){
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -824,31 +835,12 @@
         voiceListening = false;
         // keep listening through a pause too, so "continúa" said out loud can resume it
         if(state.settings.voice && (player.phase === "running" || player.phase === "paused")){
-          var now = Date.now();
-          voiceEndTimestamps = voiceEndTimestamps.filter(function(t){ return now - t < 10000; });
-          voiceEndTimestamps.push(now);
-          if(voiceEndTimestamps.length >= 4){
-            // some browsers (often Android Chrome) keep closing the mic session every couple of
-            // seconds on their own; restarting instantly just re-triggers the mic's own "listening"
-            // beep in a loop, so give up instead of pitando sin parar
-            voiceEndTimestamps = [];
+          try{ recognition.start(); }catch(e){
             state.settings.voice = false;
-            voiceError = "Tu navegador cierra el micrófono muy seguido aquí, así que se desactivó el control por voz para que no siga pitando.";
+            voiceError = "No se pudo reactivar el micrófono.";
             persist();
             renderPlayerLive();
-            return;
           }
-          if(voiceRestartTimer) clearTimeout(voiceRestartTimer);
-          voiceRestartTimer = setTimeout(function(){
-            voiceRestartTimer = null;
-            if(!(state.settings.voice && (player.phase === "running" || player.phase === "paused"))) return;
-            try{ recognition.start(); }catch(e){
-              state.settings.voice = false;
-              voiceError = "No se pudo reactivar el micrófono.";
-              persist();
-              renderPlayerLive();
-            }
-          }, 500);
         }
       };
     }catch(e){ voiceSupported = false; }
@@ -881,8 +873,6 @@
     voiceError = "";
     persist();
     if(voiceWatchdog){ clearTimeout(voiceWatchdog); voiceWatchdog = null; }
-    if(voiceRestartTimer){ clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
-    voiceEndTimestamps = [];
     if(state.settings.voice){
       voiceListening = false;
       try{
@@ -920,7 +910,8 @@
     totalPlanned: 0,
     totalElapsed: 0,
     lastTickSecond: null,
-    intervalId: null
+    intervalId: null,
+    deltaVsTarget: null
   };
 
   function buildQueue(routine){
@@ -1068,9 +1059,21 @@
     player.phase = "done";
     if(player.intervalId){ clearInterval(player.intervalId); player.intervalId = null; }
     releaseWakeLock();
-    if(voiceRestartTimer){ clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
-    voiceEndTimestamps = [];
     if(recognition){ try{ recognition.stop(); }catch(e){} }
+
+    var routine = player.routine;
+    if(routine){
+      var prevTargetSeconds = routine.targetMinutes ? routine.targetMinutes*60 : null;
+      player.deltaVsTarget = prevTargetSeconds != null ? (player.totalElapsed - prevTargetSeconds) : null;
+      if(!Array.isArray(routine.history)) routine.history = [];
+      routine.history.unshift({ ts: Date.now(), seconds: player.totalElapsed });
+      if(routine.history.length > 20) routine.history.length = 20;
+      routine.targetMinutes = Math.max(1, Math.round(player.totalElapsed/60));
+      persist();
+    }else{
+      player.deltaVsTarget = null;
+    }
+
     render();
   }
 
@@ -1081,8 +1084,6 @@
     }
     if(player.intervalId){ clearInterval(player.intervalId); player.intervalId = null; }
     releaseWakeLock();
-    if(voiceRestartTimer){ clearTimeout(voiceRestartTimer); voiceRestartTimer = null; }
-    voiceEndTimestamps = [];
     if(recognition){ try{ recognition.stop(); }catch(e){} }
     player.phase = "idle";
     go("home");
@@ -1129,7 +1130,7 @@
     var stepId = t.getAttribute("data-step");
 
     if(action === "new-routine"){
-      var r = { id:uid(), name:"Nueva rutina", targetMinutes:null, rounds:1, steps:[] };
+      var r = { id:uid(), name:"Nueva rutina", targetMinutes:null, rounds:1, steps:[], history:[] };
       state.routines.push(r);
       persist();
       go("editor", { editingId:r.id });
@@ -1143,6 +1144,7 @@
         var copy = JSON.parse(JSON.stringify(src));
         copy.id = uid();
         copy.name = src.name + " (copia)";
+        copy.history = [];
         copy.steps.forEach(function(s){ s.id = uid(); });
         state.routines.push(copy);
         persist();
@@ -1367,6 +1369,8 @@
     html += '</div>'; // goal-row (rounds)
     html += '</div>'; // total-bar
 
+    html += renderHistory(routine);
+
     html += '<div class="steps">';
     routine.steps.forEach(function(step, i){
       html += renderStepCard(step, i, routine.steps.length);
@@ -1378,6 +1382,24 @@
     html += '<div class="editor-footer"><button class="btn btn-primary btn-block btn-lg" data-action="start-routine" data-id="'+routine.id+'" '+(routine.steps.length?'':'disabled')+'>▶ Empezar esta rutina</button></div>';
 
     html += '</div>';
+    return html;
+  }
+
+  function renderHistory(routine){
+    var hist = Array.isArray(routine.history) ? routine.history : [];
+    if(!hist.length) return "";
+    var bestSeconds = Math.min.apply(null, hist.map(function(h){ return h.seconds; }));
+    var html = '<div class="card history-box">';
+    html += '<div class="total-label">Historial de tiempos</div>';
+    html += '<div class="history-list">';
+    hist.slice(0,10).forEach(function(h){
+      var isBest = h.seconds === bestSeconds;
+      html += '<div class="history-row'+(isBest?' best':'')+'">';
+      html += '<span class="history-date">'+fmtDate(h.ts)+'</span>';
+      html += '<span class="history-time">'+fmtTime(h.seconds)+(isBest?' 🏆':'')+'</span>';
+      html += '</div>';
+    });
+    html += '</div></div>';
     return html;
   }
 
@@ -1451,6 +1473,17 @@
       html += '<div class="sub">'+escapeHtml(routine?routine.name:"")+'</div>';
       html += '<div class="stat">'+fmtTime(player.totalElapsed)+'</div>';
       html += '<div class="sub">tiempo total</div>';
+      if(player.deltaVsTarget != null){
+        var d = player.deltaVsTarget;
+        if(Math.abs(d) <= 5){
+          html += '<div class="sub">Igual que tu objetivo anterior</div>';
+        }else if(d < 0){
+          html += '<div class="sub">'+fmtTime(Math.abs(d))+' más rápido que tu objetivo anterior 🎉</div>';
+        }else{
+          html += '<div class="sub">'+fmtTime(d)+' más lento que tu objetivo anterior</div>';
+        }
+      }
+      html += '<div class="sub">Nuevo objetivo para la próxima vez: '+fmtTime(player.totalElapsed)+'</div>';
       html += '<div class="actions">';
       html += '<button class="btn btn-ghost btn-lg" data-action="back-home">Inicio</button>';
       html += '<button class="btn btn-primary btn-lg" data-action="restart-routine" data-id="'+(routine?routine.id:"")+'">Repetir</button>';
