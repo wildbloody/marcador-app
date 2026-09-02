@@ -184,7 +184,8 @@
   .routine-card .head .dot-accent{ width:9px; height:9px; border-radius:50%; background:var(--accent, var(--rest)); flex-shrink:0; }
   .routine-card .actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .routine-card .actions .btn{ flex:1; }
-  .routine-card .util-row{ display:flex; gap:14px; }
+  .routine-card .util-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .routine-card .util-row-left{ display:flex; gap:14px; }
   .util-link{ background:none; border:none; color:var(--muted-2); font-size:12.5px; padding:2px 0; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
   .util-link:hover{ color:var(--muted); }
   .util-link.danger{ color:#a85246; }
@@ -247,13 +248,14 @@
   .delta-mid{ background:var(--warn-soft); color:var(--warn); }
   .delta-off{ background:var(--work-soft); color:var(--work); }
 
-  .history-box{ margin:0 18px 14px; display:flex; flex-direction:column; gap:8px; }
+  .history-box{ margin-top:12px; padding-top:12px; border-top:1px solid var(--line-soft); display:flex; flex-direction:column; gap:8px; }
   .history-list{ display:flex; flex-direction:column; }
   .history-row{ display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--muted); padding:6px 0; border-bottom:1px solid var(--line-soft); }
   .history-row:last-child{ border-bottom:none; }
   .history-row.best{ color:var(--chalk); font-weight:600; }
   .history-date{ color:var(--muted-2); font-variant-numeric:tabular-nums; }
   .history-time{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+  .history-empty{ color:var(--muted-2); font-size:12.5px; line-height:1.4; }
 
   .steps{ display:flex; flex-direction:column; gap:10px; padding:0 18px; }
   .step-card{ display:flex; flex-direction:column; gap:12px; }
@@ -680,6 +682,7 @@
   /* ============ view / routing ============ */
   var view = "home";          // 'home' | 'editor' | 'player'
   var editingId = null;
+  var expandedHistoryId = null; // which routine's history box is open on the home screen
   var app = document.getElementById("app");
 
   function go(v, opts){
@@ -1220,6 +1223,9 @@
     }else if(action === "link-sync-code"){
       var codeInput = document.getElementById("syncCodeInput");
       linkSyncCode(codeInput ? codeInput.value : "");
+    }else if(action === "toggle-history"){
+      expandedHistoryId = expandedHistoryId === id ? null : id;
+      render();
     }
   });
 
@@ -1310,10 +1316,14 @@
         html += '<button class="btn btn-primary btn-lg" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+'>▶ Empezar</button>';
         html += '</div>';
         html += '<div class="util-row">';
+        html += '<div class="util-row-left">';
         html += '<button class="util-link" data-action="edit-routine" data-id="'+r.id+'">Editar</button>';
         html += '<button class="util-link" data-action="duplicate-routine" data-id="'+r.id+'">Duplicar</button>';
         html += '<button class="util-link danger" data-action="delete-routine" data-id="'+r.id+'">Eliminar</button>';
         html += '</div>';
+        html += '<button class="util-link" data-action="toggle-history" data-id="'+r.id+'">Historial</button>';
+        html += '</div>';
+        if(expandedHistoryId === r.id){ html += renderHistory(r); }
         html += '</div>';
       });
       html += '</div>';
@@ -1369,8 +1379,6 @@
     html += '</div>'; // goal-row (rounds)
     html += '</div>'; // total-bar
 
-    html += renderHistory(routine);
-
     html += '<div class="steps">';
     routine.steps.forEach(function(step, i){
       html += renderStepCard(step, i, routine.steps.length);
@@ -1387,9 +1395,11 @@
 
   function renderHistory(routine){
     var hist = Array.isArray(routine.history) ? routine.history : [];
-    if(!hist.length) return "";
+    if(!hist.length){
+      return '<div class="history-box"><div class="history-empty">Aún no has completado esta rutina. Termínala una vez para empezar a ver aquí tu historial de tiempos.</div></div>';
+    }
     var bestSeconds = Math.min.apply(null, hist.map(function(h){ return h.seconds; }));
-    var html = '<div class="card history-box">';
+    var html = '<div class="history-box">';
     html += '<div class="total-label">Historial de tiempos</div>';
     html += '<div class="history-list">';
     hist.slice(0,10).forEach(function(h){
