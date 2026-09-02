@@ -665,6 +665,11 @@
       settings: state.settings,
       updatedAt: Date.now()
     }).then(function(){ setSyncStatus("ok"); }).catch(function(){ setSyncStatus("error"); });
+    // any routine shared with other codes also pushes its current definition,
+    // so an edit here (name, ejercicios, objetivo) reaches everyone it's linked with
+    state.routines.forEach(function(r){
+      if(r.shareId) pushSharedDef(r);
+    });
   }
 
   function scheduleCloudSave(){
@@ -709,9 +714,12 @@
   /* ============ compartir una rutina con otro código ============
      Cada rutina puede vincularse a otros códigos de sincronización para
      comparar tiempos. El vínculo vive aparte (sharedRoutines/{routine.id}):
-     ahí se guarda una foto de la rutina, la lista de códigos vinculados y
-     los tiempos que cada código va registrando. La copia local de cada
-     persona sigue siendo suya (si la edita después, no se re-sincroniza). */
+     ahí se guarda el nombre, los ejercicios, el objetivo semanal, la lista
+     de códigos vinculados y los tiempos que cada código va registrando.
+     Cuando cualquiera de los códigos vinculados edita la rutina (nombre,
+     ejercicios, objetivo), ese cambio se sube a este documento compartido;
+     el resto de códigos lo recogen la próxima vez que abren la app o esa
+     rutina en concreto -- es decir, gana la última edición guardada. */
   function shareCodeLabel(code){
     return code === syncCode ? "Tú" : ("Código " + code);
   }
@@ -756,10 +764,14 @@
     }).catch(function(){ window.alert("No se pudo actualizar. Comprueba tu conexión e inténtalo de nuevo."); });
   }
 
-  function syncSharedMeta(routine){
+  function pushSharedDef(routine){
     if(!routine.shareId || !syncEnabled || !syncDb) return;
     syncDb.collection("sharedRoutines").doc(routine.shareId).set({
-      weeklyTarget: routine.weeklyTarget || null
+      name: routine.name,
+      steps: routine.steps,
+      rounds: routine.rounds,
+      weeklyTarget: routine.weeklyTarget || null,
+      linkedCodes: [syncCode].concat(routine.linkedCodes)
     }, { merge:true }).catch(function(){});
   }
 
@@ -790,22 +802,42 @@
     syncDb.collection("sharedRoutines").where("linkedCodes", "array-contains", syncCode).get().then(function(snap){
       var changed = false;
       snap.forEach(function(doc){
-        var already = state.routines.some(function(r){ return r.shareId === doc.id; });
-        if(already) return;
         var data = doc.data();
-        var newRoutine = normalizeRoutine({
-          id: uid(),
-          name: data.name || "Rutina compartida",
-          targetMinutes: null,
-          rounds: data.rounds || 1,
-          steps: Array.isArray(data.steps) ? JSON.parse(JSON.stringify(data.steps)) : [],
-          history: []
-        });
-        newRoutine.shareId = doc.id;
-        newRoutine.weeklyTarget = data.weeklyTarget || null;
-        newRoutine.linkedCodes = (Array.isArray(data.linkedCodes) ? data.linkedCodes : []).filter(function(c){ return c !== syncCode; });
-        state.routines.push(newRoutine);
-        changed = true;
+        var existing = state.routines.find(function(r){ return r.shareId === doc.id; });
+        var remoteSteps = Array.isArray(data.steps) ? data.steps : [];
+        var remoteLinked = (Array.isArray(data.linkedCodes) ? data.linkedCodes : []).filter(function(c){ return c !== syncCode; });
+        if(existing){
+          // someone else (or this same code, from another device) edited the shared
+          // routine since we last saw it -- pull their version so everyone stays in sync
+          var remoteStepsJson = JSON.stringify(remoteSteps);
+          var defChanged = existing.name !== (data.name || existing.name)
+            || JSON.stringify(existing.steps) !== remoteStepsJson
+            || existing.rounds !== (data.rounds || existing.rounds)
+            || existing.weeklyTarget !== (data.weeklyTarget != null ? data.weeklyTarget : existing.weeklyTarget)
+            || JSON.stringify(existing.linkedCodes) !== JSON.stringify(remoteLinked);
+          if(defChanged){
+            existing.name = data.name || existing.name;
+            existing.steps = JSON.parse(remoteStepsJson);
+            existing.rounds = data.rounds || existing.rounds;
+            existing.weeklyTarget = data.weeklyTarget != null ? data.weeklyTarget : existing.weeklyTarget;
+            existing.linkedCodes = remoteLinked;
+            changed = true;
+          }
+        }else{
+          var newRoutine = normalizeRoutine({
+            id: uid(),
+            name: data.name || "Rutina compartida",
+            targetMinutes: null,
+            rounds: data.rounds || 1,
+            steps: JSON.parse(JSON.stringify(remoteSteps)),
+            history: []
+          });
+          newRoutine.shareId = doc.id;
+          newRoutine.weeklyTarget = data.weeklyTarget || null;
+          newRoutine.linkedCodes = remoteLinked;
+          state.routines.push(newRoutine);
+          changed = true;
+        }
       });
       if(changed){ persist(); render(); }
     }).catch(function(){});
@@ -1383,6 +1415,8 @@
       go("editor", { editingId:r.id });
     }else if(action === "edit-routine"){
       go("editor", { editingId:id });
+      var routineBeingEdited = findRoutine(id);
+      if(routineBeingEdited && routineBeingEdited.shareId) checkSharedRoutines();
     }else if(action === "start-routine"){
       startWorkout(id);
     }else if(action === "duplicate-routine"){
@@ -1552,7 +1586,6 @@
     if(field === "weekly-target"){
       routine.weeklyTarget = t.value === "" ? null : Math.max(0, Number(t.value)||0);
       persist();
-      syncSharedMeta(routine);
       return;
     }
     var step = routine.steps.find(function(s){ return s.id === stepId; });
