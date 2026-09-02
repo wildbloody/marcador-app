@@ -248,45 +248,91 @@
   .delta-mid{ background:var(--warn-soft); color:var(--warn); }
   .delta-off{ background:var(--work-soft); color:var(--work); }
 
-  .history-box{ margin-top:12px; padding-top:12px; border-top:1px solid var(--line-soft); display:flex; flex-direction:column; gap:8px; }
+  .history-box{ margin-top:12px; padding-top:12px; border-top:1px solid var(--line-soft); display:flex; flex-direction:column; gap:10px; }
+  .history-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .history-list{ display:flex; flex-direction:column; }
   .history-row{ display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--muted); padding:6px 0; border-bottom:1px solid var(--line-soft); }
   .history-row:last-child{ border-bottom:none; }
   .history-row.best{ color:var(--chalk); font-weight:600; }
+  .history-left{ display:flex; align-items:center; gap:8px; }
   .history-date{ color:var(--muted-2); font-variant-numeric:tabular-nums; }
   .history-time{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
   .history-empty{ color:var(--muted-2); font-size:12.5px; line-height:1.4; }
 
-  .steps{ display:flex; flex-direction:column; gap:10px; padding:0 18px; }
-  .step-card{ display:flex; flex-direction:column; gap:12px; }
-  .step-top{ display:flex; align-items:center; gap:10px; }
+  .chart-empty{ color:var(--muted-2); font-size:12.5px; line-height:1.4; }
+  .compare-chart{ display:flex; flex-direction:column; gap:8px; padding:10px 0 4px; }
+  .compare-chart-svg{ width:100%; height:auto; display:block; }
+  .chart-axis{ stroke:var(--line); stroke-width:1; }
+  .chart-axis-label{ fill:var(--muted-2); font-size:9px; font-family:var(--font-mono); }
+  .chart-legend{ display:flex; gap:12px; flex-wrap:wrap; }
+  .chart-legend-item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
+  .chart-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .chart-hint{ color:var(--muted-2); font-size:11.5px; line-height:1.4; }
+
+  .home-nav{ text-align:center; padding:0 18px 14px; }
+  .badge-row{ display:flex; gap:6px; flex-wrap:wrap; }
+  .badge{
+    font-size:11px; padding:3px 9px; border-radius:999px; background:var(--panel-2);
+    border:1px solid var(--line); color:var(--muted);
+  }
+
+  .share-box{ margin:0 18px 14px; display:flex; flex-direction:column; gap:10px; }
+  .linked-codes-list{ display:flex; flex-wrap:wrap; gap:8px; }
+  .linked-code-chip{
+    display:inline-flex; align-items:center; gap:6px; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:999px; padding:6px 6px 6px 12px; font-size:13px; color:var(--chalk);
+    font-family:var(--font-mono); letter-spacing:0.06em;
+  }
+  .code-remove{
+    appearance:none; border:none; background:var(--panel-3); color:var(--muted); width:20px; height:20px;
+    border-radius:50%; cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center;
+  }
+  .code-remove:hover{ color:var(--work); }
+
+  .explore-title{ font-family:var(--font-display); font-size:26px; padding:8px 18px 12px; }
+
+  .steps{ display:flex; flex-direction:column; gap:16px; padding:2px 18px; }
+  .step-card{ display:flex; flex-direction:column; gap:16px; padding:18px; }
+  .step-head{ display:flex; align-items:center; gap:10px; }
   .step-index{
     font-family:var(--font-mono); font-size:13px; color:var(--muted-2);
     width:22px; text-align:center; flex-shrink:0;
   }
   .step-name{
-    flex:1; background:var(--panel-2); border:1px solid var(--line); color:var(--chalk);
+    flex:1; min-width:0; background:var(--panel-2); border:1px solid var(--line); color:var(--chalk);
     border-radius:8px; padding:10px 12px; font-size:15px; font-weight:600;
   }
   .step-name::placeholder{ color:var(--muted-2); font-weight:400; }
+  .step-menu{ display:flex; gap:4px; flex-shrink:0; }
 
   .seg-toggle{ display:flex; background:var(--panel-2); border:1px solid var(--line); border-radius:999px; padding:3px; gap:2px; }
   .seg-toggle button{
     appearance:none; border:none; background:transparent; color:var(--muted);
     font-size:12.5px; font-weight:600; padding:7px 12px; border-radius:999px; cursor:pointer;
-    text-transform:uppercase; letter-spacing:0.04em;
+    text-transform:uppercase; letter-spacing:0.04em; flex:1;
   }
   .seg-toggle button.active.type-time{ background:var(--work); color:#1a0700; }
   .seg-toggle button.active.type-reps{ background:var(--rest); color:#0a1414; }
 
-  .field-row{ display:flex; gap:10px; flex-wrap:wrap; }
-  .field{ flex:1; min-width:120px; display:flex; flex-direction:column; gap:6px; }
-  .field label{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted-2); }
-  .field input[type=number]{
-    background:var(--panel-2); border:1px solid var(--line); color:var(--chalk);
-    border-radius:8px; padding:9px 10px; font-family:var(--font-mono); font-size:16px; width:100%;
+  .step-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .metric-box{
+    grid-column:span 1; background:var(--panel-2); border:1px solid var(--line-soft);
+    border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;
   }
-  .chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; }
+  .metric-box-wide{ grid-column:1 / -1; }
+  .metric-box-secondary{ background:transparent; border-style:dashed; }
+  .metric-box-secondary .metric-input-row input{ font-size:17px; }
+  .metric-box label{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; color:var(--muted-2);
+  }
+  .metric-input-row{ display:flex; align-items:baseline; gap:6px; }
+  .metric-box input[type=number]{
+    background:transparent; border:none; padding:0; color:var(--chalk);
+    font-family:var(--font-mono); font-size:24px; font-weight:700; width:100%; min-width:0;
+  }
+  .metric-unit{ color:var(--muted-2); font-size:12.5px; font-family:var(--font-mono); flex-shrink:0; }
+
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; }
   .chip{
     appearance:none; border:1px solid var(--line); background:transparent; color:var(--muted);
     font-family:var(--font-mono); font-size:12px; padding:5px 9px; border-radius:7px; cursor:pointer;
@@ -294,11 +340,9 @@
   .chip:hover{ border-color:var(--muted-2); color:var(--chalk); }
   .chip.active{ background:var(--panel-3); color:var(--chalk); border-color:var(--muted-2); }
 
-  .step-bottom{ display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid var(--line-soft); padding-top:10px; }
-  .step-tools{ display:flex; gap:6px; }
   .tool-btn{
     appearance:none; border:1px solid var(--line); background:transparent; color:var(--muted);
-    width:34px; height:34px; border-radius:8px; cursor:pointer; font-size:14px;
+    width:30px; height:30px; border-radius:8px; cursor:pointer; font-size:13px;
     display:flex; align-items:center; justify-content:center;
   }
   .tool-btn:hover{ color:var(--chalk); border-color:var(--muted-2); }
@@ -469,6 +513,18 @@
     }, overrides || {});
   }
 
+  /* fills in fields added after a routine may already exist locally or in the cloud,
+     so old saved data (and freshly-seeded routines) always have a consistent shape */
+  function normalizeRoutine(r){
+    if(!Array.isArray(r.history)) r.history = [];
+    if(!Array.isArray(r.linkedCodes)) r.linkedCodes = [];
+    if(r.shareId === undefined) r.shareId = null;
+    if(r.weeklyTarget === undefined) r.weeklyTarget = null;
+    if(r.isPublic === undefined) r.isPublic = false;
+    if(r.publicId === undefined) r.publicId = null;
+    return r;
+  }
+
   function seedRoutines(){
     return [
       {
@@ -532,11 +588,13 @@
         var parsed = JSON.parse(raw);
         if(parsed && parsed.routines && parsed.routines.length){
           parsed.settings = Object.assign({ sound:true, vibration:true, voice:false, announce:true }, parsed.settings || {});
+          parsed.routines.forEach(normalizeRoutine);
           return parsed;
         }
       }
     }catch(e){}
     var seeded = { routines: seedRoutines(), settings:{ sound:true, vibration:true, voice:false, announce:true } };
+    seeded.routines.forEach(normalizeRoutine);
     return seeded;
   }
 
@@ -627,11 +685,13 @@
         var data = doc.data();
         if(data && data.routines && data.routines.length){
           state.routines = data.routines;
+          state.routines.forEach(normalizeRoutine);
           state.settings = Object.assign({ sound:true, vibration:true, voice:false, announce:true }, data.settings||{});
           try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
         }
         syncCode = code;
         try{ localStorage.setItem(SYNC_CODE_KEY, syncCode); }catch(e){}
+        checkSharedRoutines();
         render();
         window.alert("Rutinas sincronizadas con el código "+code+".");
       }else{
@@ -644,6 +704,165 @@
     }).catch(function(){
       window.alert("No se pudo conectar con la nube. Comprueba tu conexión e inténtalo de nuevo.");
     });
+  }
+
+  /* ============ compartir una rutina con otro código ============
+     Cada rutina puede vincularse a otros códigos de sincronización para
+     comparar tiempos. El vínculo vive aparte (sharedRoutines/{routine.id}):
+     ahí se guarda una foto de la rutina, la lista de códigos vinculados y
+     los tiempos que cada código va registrando. La copia local de cada
+     persona sigue siendo suya (si la edita después, no se re-sincroniza). */
+  function shareCodeLabel(code){
+    return code === syncCode ? "Tú" : ("Código " + code);
+  }
+
+  function linkRoutineCode(routine, rawCode){
+    var code = (rawCode||"").trim().toUpperCase();
+    if(!code) return;
+    if(code === syncCode){ window.alert("Ese es tu propio código."); return; }
+    if(routine.linkedCodes.indexOf(code) !== -1){ window.alert("Ese código ya está vinculado a esta rutina."); return; }
+    if(!syncEnabled || !syncDb){ window.alert("La sincronización no está disponible ahora mismo."); return; }
+    var seen = {};
+    var allCodes = [syncCode].concat(routine.linkedCodes, [code]).filter(function(c){
+      if(seen[c]) return false; seen[c] = true; return true;
+    });
+    syncDb.collection("sharedRoutines").doc(routine.id).set({
+      name: routine.name,
+      steps: routine.steps,
+      rounds: routine.rounds,
+      weeklyTarget: routine.weeklyTarget || null,
+      linkedCodes: allCodes,
+      updatedAt: Date.now()
+    }, { merge:true }).then(function(){
+      routine.linkedCodes = allCodes.filter(function(c){ return c !== syncCode; });
+      routine.shareId = routine.id;
+      persist();
+      render();
+    }).catch(function(){ window.alert("No se pudo vincular el código. Comprueba tu conexión e inténtalo de nuevo."); });
+  }
+
+  function unlinkRoutineCode(routine, code){
+    if(!syncEnabled || !syncDb){ window.alert("La sincronización no está disponible ahora mismo."); return; }
+    var remaining = routine.linkedCodes.filter(function(c){ return c !== code; });
+    var allCodes = [syncCode].concat(remaining);
+    syncDb.collection("sharedRoutines").doc(routine.shareId || routine.id).set({
+      linkedCodes: allCodes,
+      updatedAt: Date.now()
+    }, { merge:true }).then(function(){
+      routine.linkedCodes = remaining;
+      if(!remaining.length) routine.shareId = null;
+      persist();
+      render();
+    }).catch(function(){ window.alert("No se pudo actualizar. Comprueba tu conexión e inténtalo de nuevo."); });
+  }
+
+  function syncSharedMeta(routine){
+    if(!routine.shareId || !syncEnabled || !syncDb) return;
+    syncDb.collection("sharedRoutines").doc(routine.shareId).set({
+      weeklyTarget: routine.weeklyTarget || null
+    }, { merge:true }).catch(function(){});
+  }
+
+  function pushSharedEntry(routine, seconds){
+    if(!routine.shareId || !syncEnabled || !syncDb) return;
+    syncDb.collection("sharedRoutines").doc(routine.shareId).set({
+      linkedCodes: [syncCode].concat(routine.linkedCodes),
+      entries: firebase.firestore.FieldValue.arrayUnion({ code: syncCode, ts: Date.now(), seconds: seconds })
+    }, { merge:true }).catch(function(){});
+  }
+
+  function fetchSharedEntries(shareId, cb){
+    if(!syncEnabled || !syncDb){ cb(null); return; }
+    syncDb.collection("sharedRoutines").doc(shareId).get().then(function(doc){
+      if(doc.exists){
+        var data = doc.data();
+        sharedEntriesCache[shareId] = {
+          entries: Array.isArray(data.entries) ? data.entries : [],
+          linkedCodes: Array.isArray(data.linkedCodes) ? data.linkedCodes : []
+        };
+        cb(sharedEntriesCache[shareId]);
+      }else{ cb(null); }
+    }).catch(function(){ cb(null); });
+  }
+
+  function checkSharedRoutines(){
+    if(!syncEnabled || !syncDb || !syncCode) return;
+    syncDb.collection("sharedRoutines").where("linkedCodes", "array-contains", syncCode).get().then(function(snap){
+      var changed = false;
+      snap.forEach(function(doc){
+        var already = state.routines.some(function(r){ return r.shareId === doc.id; });
+        if(already) return;
+        var data = doc.data();
+        var newRoutine = normalizeRoutine({
+          id: uid(),
+          name: data.name || "Rutina compartida",
+          targetMinutes: null,
+          rounds: data.rounds || 1,
+          steps: Array.isArray(data.steps) ? JSON.parse(JSON.stringify(data.steps)) : [],
+          history: []
+        });
+        newRoutine.shareId = doc.id;
+        newRoutine.weeklyTarget = data.weeklyTarget || null;
+        newRoutine.linkedCodes = (Array.isArray(data.linkedCodes) ? data.linkedCodes : []).filter(function(c){ return c !== syncCode; });
+        state.routines.push(newRoutine);
+        changed = true;
+      });
+      if(changed){ persist(); render(); }
+    }).catch(function(){});
+  }
+
+  /* ============ rutinas públicas (Todo el Mundo) ============ */
+  function publishRoutine(routine){
+    if(!syncEnabled || !syncDb){ window.alert("La sincronización no está disponible ahora mismo."); return; }
+    syncDb.collection("publicRoutines").doc(routine.id).set({
+      name: routine.name,
+      steps: routine.steps,
+      rounds: routine.rounds,
+      publishedAt: Date.now()
+    }).then(function(){
+      routine.isPublic = true;
+      routine.publicId = routine.id;
+      persist();
+      render();
+    }).catch(function(){ window.alert("No se pudo publicar. Comprueba tu conexión e inténtalo de nuevo."); });
+  }
+
+  function unpublishRoutine(routine){
+    if(!syncEnabled || !syncDb){ window.alert("La sincronización no está disponible ahora mismo."); return; }
+    syncDb.collection("publicRoutines").doc(routine.publicId || routine.id).delete().then(function(){
+      routine.isPublic = false;
+      routine.publicId = null;
+      persist();
+      render();
+    }).catch(function(){ window.alert("No se pudo quitar de públicas. Comprueba tu conexión e inténtalo de nuevo."); });
+  }
+
+  function fetchPublicRoutines(){
+    if(!syncEnabled || !syncDb){ publicRoutinesList = []; render(); return; }
+    publicRoutinesList = "loading";
+    render();
+    syncDb.collection("publicRoutines").orderBy("publishedAt","desc").limit(60).get().then(function(snap){
+      var list = [];
+      snap.forEach(function(doc){ list.push(Object.assign({ id: doc.id }, doc.data())); });
+      publicRoutinesList = list;
+      render();
+    }).catch(function(){ publicRoutinesList = []; render(); });
+  }
+
+  function addPublicRoutineToMine(pub){
+    var copy = normalizeRoutine({
+      id: uid(),
+      name: (pub.name || "Rutina") + " (de Todo el Mundo)",
+      targetMinutes: null,
+      rounds: pub.rounds || 1,
+      steps: Array.isArray(pub.steps) ? JSON.parse(JSON.stringify(pub.steps)) : [],
+      history: []
+    });
+    copy.steps.forEach(function(s){ s.id = uid(); });
+    state.routines.push(copy);
+    persist();
+    window.alert("«"+copy.name+"» añadida a tu Rutinario.");
+    go("home");
   }
 
   /* ============ helpers ============ */
@@ -684,15 +903,13 @@
   var ROUTINE_ACCENTS = ["#ff5a36","#33c7c1","#ffcf5c","#8bd450","#5ccfe6","#ff8a5c"];
   function routineAccent(index){ return ROUTINE_ACCENTS[index % ROUTINE_ACCENTS.length]; }
 
-  /* how many seconds before a rest period ends should the app say out loud
-     what's coming up next (if the rest is shorter than this, it announces
-     right at the start instead, since there's no time to wait) */
-  var ANNOUNCE_LEAD_SECONDS = 5;
-
   /* ============ view / routing ============ */
-  var view = "home";          // 'home' | 'editor' | 'player'
+  var view = "home";          // 'home' | 'editor' | 'player' | 'explore'
   var editingId = null;
   var expandedHistoryId = null; // which routine's history box is open on the home screen
+  var showChartForId = null;    // which routine's chart (progress or shared comparison) is open
+  var sharedEntriesCache = {};  // shareId -> { linkedCodes:[...], entries:[...] } pulled from Firestore
+  var publicRoutinesList = null; // cache for "Todo el mundo": null = not loaded, "loading", or an array
   var app = document.getElementById("app");
 
   function go(v, opts){
@@ -1013,6 +1230,9 @@
     }else{
       player.repsElapsed = 0;
     }
+    if(item.kind === "rest" && item.nextName){
+      speakText("Siguiente: " + item.nextName);
+    }
     render();
   }
 
@@ -1030,10 +1250,6 @@
       if(remaining !== player.lastTickSecond){
         player.lastTickSecond = remaining;
         if(remaining <= 3 && remaining > 0) tick3();
-        if(item.kind === "rest" && item.nextName){
-          var announceAt = item.seconds > ANNOUNCE_LEAD_SECONDS ? ANNOUNCE_LEAD_SECONDS : item.seconds;
-          if(remaining === announceAt) speakText("Siguiente: " + item.nextName);
-        }
         updateTimerDom(remaining, item);
         if(remaining <= 0){
           if(item.kind === "exercise"){ alertExerciseEnd(); } else { alertRestEnd(); }
@@ -1097,9 +1313,10 @@
       player.deltaVsTarget = prevTargetSeconds != null ? (player.totalElapsed - prevTargetSeconds) : null;
       if(!Array.isArray(routine.history)) routine.history = [];
       routine.history.unshift({ ts: Date.now(), seconds: player.totalElapsed });
-      if(routine.history.length > 20) routine.history.length = 20;
+      if(routine.history.length > 40) routine.history.length = 40;
       routine.targetMinutes = Math.max(1, Math.round(player.totalElapsed/60));
       persist();
+      pushSharedEntry(routine, player.totalElapsed);
     }else{
       player.deltaVsTarget = null;
     }
@@ -1160,7 +1377,7 @@
     var stepId = t.getAttribute("data-step");
 
     if(action === "new-routine"){
-      var r = { id:uid(), name:"Nueva rutina", targetMinutes:null, rounds:1, steps:[], history:[] };
+      var r = normalizeRoutine({ id:uid(), name:"Nueva rutina", targetMinutes:null, rounds:1, steps:[], history:[] });
       state.routines.push(r);
       persist();
       go("editor", { editingId:r.id });
@@ -1175,6 +1392,10 @@
         copy.id = uid();
         copy.name = src.name + " (copia)";
         copy.history = [];
+        copy.linkedCodes = [];
+        copy.shareId = null;
+        copy.isPublic = false;
+        copy.publicId = null;
         copy.steps.forEach(function(s){ s.id = uid(); });
         state.routines.push(copy);
         persist();
@@ -1240,6 +1461,38 @@
     else if(action === "toggle-sound"){ state.settings.sound = !state.settings.sound; persist(); render(); }
     else if(action === "toggle-announce"){ state.settings.announce = !state.settings.announce; persist(); render(); }
     else if(action === "restart-routine"){ startWorkout(id); }
+    else if(action === "toggle-chart"){
+      showChartForId = showChartForId === id ? null : id;
+      render();
+    }
+    else if(action === "open-explore"){
+      go("explore");
+      if(publicRoutinesList === null) fetchPublicRoutines();
+    }
+    else if(action === "add-public-routine"){
+      var pubId = t.getAttribute("data-id");
+      var pub = (publicRoutinesList||[]).find(function(p){ return p.id === pubId; });
+      if(pub) addPublicRoutineToMine(pub);
+    }
+    else if(action === "toggle-public"){
+      var routineTogglePub = findRoutine(editingId);
+      if(routineTogglePub){
+        if(routineTogglePub.isPublic) unpublishRoutine(routineTogglePub);
+        else publishRoutine(routineTogglePub);
+      }
+    }
+    else if(action === "link-routine-code"){
+      var routineLink = findRoutine(editingId);
+      var routineCodeInput = document.getElementById("routineCodeInput");
+      if(routineLink) linkRoutineCode(routineLink, routineCodeInput ? routineCodeInput.value : "");
+    }
+    else if(action === "unlink-routine-code"){
+      var routineUnlink = findRoutine(editingId);
+      var codeToRemove = t.getAttribute("data-code");
+      if(routineUnlink && window.confirm("¿Quitar el código "+codeToRemove+" de esta rutina compartida?")){
+        unlinkRoutineCode(routineUnlink, codeToRemove);
+      }
+    }
     else if(action === "goal-chip"){
       var routine7 = findRoutine(editingId);
       if(routine7){ routine7.targetMinutes = Number(t.getAttribute("data-val")); persist(); render(); }
@@ -1254,6 +1507,19 @@
     }else if(action === "toggle-history"){
       expandedHistoryId = expandedHistoryId === id ? null : id;
       render();
+    }
+  });
+
+  app.addEventListener("keydown", function(e){
+    if(e.key !== "Enter") return;
+    if(e.target.id === "syncCodeInput"){
+      e.preventDefault();
+      var linkBtn = app.querySelector('[data-action="link-sync-code"]');
+      if(linkBtn) linkBtn.click();
+    }else if(e.target.id === "routineCodeInput"){
+      e.preventDefault();
+      var linkBtn2 = app.querySelector('[data-action="link-routine-code"]');
+      if(linkBtn2) linkBtn2.click();
     }
   });
 
@@ -1281,6 +1547,12 @@
       routine.rounds = roundsNum;
       persist();
       updateTotalBarDom(routine);
+      return;
+    }
+    if(field === "weekly-target"){
+      routine.weeklyTarget = t.value === "" ? null : Math.max(0, Number(t.value)||0);
+      persist();
+      syncSharedMeta(routine);
       return;
     }
     var step = routine.steps.find(function(s){ return s.id === stepId; });
@@ -1318,9 +1590,12 @@
 
   /* ============ rendering ============ */
   function render(){
-    if(view === "home") app.innerHTML = renderHome();
-    else if(view === "editor") app.innerHTML = renderEditor();
-    else if(view === "player") app.innerHTML = renderPlayer();
+    var html = "";
+    if(view === "home") html = renderHome();
+    else if(view === "editor") html = renderEditor();
+    else if(view === "player") html = renderPlayer();
+    else if(view === "explore") html = renderExplore();
+    app.innerHTML = html;
     if(view === "home") setSyncStatus(syncStatus);
   }
 
@@ -1328,6 +1603,7 @@
     var html = "";
     html += '<div class="screen">';
     html += '<div class="topbar topbar-home"><div class="brand"><span class="mark">MARCADOR</span><span class="tag">tu ritmo de gimnasio</span></div></div>';
+    html += '<div class="home-nav"><button class="util-link" data-action="open-explore">🌍 Explorar rutinas públicas</button></div>';
 
     if(!state.routines.length){
       html += '<div class="empty"><span class="mark-big">Aún no hay rutinas</span>Crea tu primera rutina y Marcador irá marcando cada ejercicio y descanso por ti.</div>';
@@ -1340,6 +1616,10 @@
         html += '<div class="head"><span class="dot-accent"></span><h3>'+escapeHtml(r.name||"Sin nombre")+'</h3></div>';
         var roundsN = Math.max(1, Number(r.rounds)||1);
         html += '<div class="meta">'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+(roundsN>1?' · '+roundsN+' vueltas':'')+' · '+fmtTime(total)+' total'+(r.targetMinutes?' · objetivo '+r.targetMinutes+' min':'')+'</div>';
+        var badges = "";
+        if(r.isPublic) badges += '<span class="badge">🌍 Pública</span>';
+        if(r.linkedCodes && r.linkedCodes.length) badges += '<span class="badge">🔗 Compartida ('+(r.linkedCodes.length+1)+')</span>';
+        if(badges) html += '<div class="badge-row">'+badges+'</div>';
         html += '<div class="actions">';
         html += '<button class="btn btn-primary btn-lg" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+'>▶ Empezar</button>';
         html += '</div>';
@@ -1407,6 +1687,22 @@
     html += '</div>'; // goal-row (rounds)
     html += '</div>'; // total-bar
 
+    html += '<div class="card share-box">';
+    html += '<div class="total-label">Compartir</div>';
+    html += '<div class="goal-row"><div class="total-label">Objetivo (veces/semana)</div><input class="goal-input" type="number" min="0" data-field="weekly-target" value="'+(routine.weeklyTarget!=null?routine.weeklyTarget:"")+'" placeholder="—"></div>';
+    if(routine.linkedCodes && routine.linkedCodes.length){
+      html += '<div class="linked-codes-list">';
+      routine.linkedCodes.forEach(function(c){
+        html += '<span class="linked-code-chip">'+escapeHtml(c)+'<button class="code-remove" data-action="unlink-routine-code" data-code="'+escapeHtml(c)+'" title="Quitar">✕</button></span>';
+      });
+      html += '</div>';
+    }else{
+      html += '<div class="sync-hint">Vincula el código de otra persona para compartir esta rutina y comparar vuestros tiempos.</div>';
+    }
+    html += '<div class="sync-link-row"><input class="sync-input" id="routineCodeInput" maxlength="10" placeholder="Código a vincular"><button class="btn btn-primary btn-sm" data-action="link-routine-code">Vincular</button></div>';
+    html += '<button class="toggle-pill '+(routine.isPublic?'on':'')+'" data-action="toggle-public"><span class="dot '+(routine.isPublic?'on':'')+'"></span>'+(routine.isPublic?'🌍 Pública':'🔒 Privada')+'</button>';
+    html += '</div>';
+
     html += '<div class="steps">';
     routine.steps.forEach(function(step, i){
       html += renderStepCard(step, i, routine.steps.length);
@@ -1421,23 +1717,209 @@
     return html;
   }
 
+  function pad2(n){ return (n<10?"0":"")+n; }
+  function weekKey(ts){
+    var d = new Date(ts);
+    var day = (d.getDay()+6)%7; // 0 = Monday
+    var monday = new Date(d.getFullYear(), d.getMonth(), d.getDate()-day);
+    return monday.getFullYear()+"-"+pad2(monday.getMonth()+1)+"-"+pad2(monday.getDate());
+  }
+  function weekLabel(key){
+    var parts = key.split("-");
+    return parts[2]+"/"+parts[1];
+  }
+
   function renderHistory(routine){
     var hist = Array.isArray(routine.history) ? routine.history : [];
     if(!hist.length){
       return '<div class="history-box"><div class="history-empty">Aún no has completado esta rutina. Termínala una vez para empezar a ver aquí tu historial de tiempos.</div></div>';
     }
     var bestSeconds = Math.min.apply(null, hist.map(function(h){ return h.seconds; }));
+
     var html = '<div class="history-box">';
-    html += '<div class="total-label">Historial de tiempos</div>';
+    html += '<div class="history-header"><div class="total-label">Historial de tiempos</div>';
+    if(hist.length > 1 || routine.shareId){
+      html += '<button class="util-link" data-action="toggle-chart" data-id="'+routine.id+'">'+(showChartForId===routine.id?'Ocultar gráfico':'📊 Comparar')+'</button>';
+    }
+    html += '</div>';
+
+    if(showChartForId === routine.id){
+      html += routine.shareId ? renderSharedChart(routine) : renderProgressChart(routine);
+    }
+
     html += '<div class="history-list">';
-    hist.slice(0,10).forEach(function(h){
+    hist.slice(0,15).forEach(function(h){
       var isBest = h.seconds === bestSeconds;
       html += '<div class="history-row'+(isBest?' best':'')+'">';
-      html += '<span class="history-date">'+fmtDate(h.ts)+'</span>';
+      html += '<span class="history-left"><span class="history-date">'+fmtDate(h.ts)+'</span></span>';
       html += '<span class="history-time">'+fmtTime(h.seconds)+(isBest?' 🏆':'')+'</span>';
       html += '</div>';
     });
     html += '</div></div>';
+    return html;
+  }
+
+  function renderProgressChart(routine){
+    var hist = Array.isArray(routine.history) ? routine.history : [];
+    if(hist.length < 2){
+      return '<div class="chart-empty">Hacen falta al menos dos tiempos registrados para ver tu progreso.</div>';
+    }
+    var pts = hist.slice().sort(function(a,b){ return a.ts - b.ts; });
+    var allSeconds = pts.map(function(p){ return p.seconds; });
+    var minS = Math.min.apply(null, allSeconds), maxS = Math.max.apply(null, allSeconds);
+    if(minS === maxS){ minS = Math.max(0, minS - 10); maxS = maxS + 10; }
+
+    var W = 320, H = 170, padL = 40, padR = 12, padT = 16, padB = 14;
+    var innerW = W - padL - padR, innerH = H - padT - padB;
+    function xFor(i, count){ return count <= 1 ? padL + innerW/2 : padL + (innerW * (i/(count-1))); }
+    function yFor(sec){ return padT + innerH * ((sec - minS) / (maxS - minS)); }
+
+    var path = "";
+    pts.forEach(function(p, i){
+      var x = xFor(i, pts.length), y = yFor(p.seconds);
+      path += (i===0 ? "M" : "L") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+    });
+
+    var svg = '<svg viewBox="0 0 '+W+' '+H+'" class="compare-chart-svg" preserveAspectRatio="xMidYMid meet">';
+    svg += '<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(padT+innerH)+'" class="chart-axis"/>';
+    svg += '<line x1="'+padL+'" y1="'+(padT+innerH)+'" x2="'+(padL+innerW)+'" y2="'+(padT+innerH)+'" class="chart-axis"/>';
+    svg += '<text x="4" y="'+(padT+4)+'" class="chart-axis-label">'+fmtTime(minS)+'</text>';
+    svg += '<text x="4" y="'+(padT+innerH+2)+'" class="chart-axis-label">'+fmtTime(maxS)+'</text>';
+    svg += '<path d="'+path+'" fill="none" stroke="#33c7c1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+    pts.forEach(function(p, i){
+      var x = xFor(i, pts.length), y = yFor(p.seconds);
+      svg += '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="3.2" fill="#33c7c1"/>';
+    });
+    svg += '</svg>';
+
+    return '<div class="compare-chart">'+svg+'<div class="chart-hint">Cada punto es un intento, en orden. Cuanto más arriba, más rápido.</div></div>';
+  }
+
+  function renderSharedChart(routine){
+    var cached = sharedEntriesCache[routine.shareId];
+    if(!cached){
+      fetchSharedEntries(routine.shareId, function(){ render(); });
+      return '<div class="chart-empty">Cargando comparativa…</div>';
+    }
+
+    var ownFromLocal = (routine.history||[]).map(function(h){ return { code: syncCode, ts: h.ts, seconds: h.seconds }; });
+    var seenKeys = {};
+    var merged = (cached.entries||[]).concat(ownFromLocal).filter(function(e){
+      var k = e.code+"|"+e.ts;
+      if(seenKeys[k]) return false;
+      seenKeys[k] = true;
+      return true;
+    });
+    if(merged.length < 2){
+      return '<div class="chart-empty">Hacen falta al menos dos tiempos registrados (entre los códigos vinculados) para comparar.</div>';
+    }
+
+    var codes = [syncCode].concat(routine.linkedCodes);
+    var byCode = {};
+    merged.forEach(function(e){
+      if(codes.indexOf(e.code) === -1) codes.push(e.code);
+      if(!byCode[e.code]) byCode[e.code] = {};
+      var wk = weekKey(e.ts);
+      if(!byCode[e.code][wk]) byCode[e.code][wk] = [];
+      byCode[e.code][wk].push(e.seconds);
+    });
+
+    var allWeeks = [];
+    Object.keys(byCode).forEach(function(c){
+      Object.keys(byCode[c]).forEach(function(wk){ if(allWeeks.indexOf(wk) === -1) allWeeks.push(wk); });
+    });
+    allWeeks.sort();
+
+    var series = {};
+    codes.forEach(function(c){
+      if(!byCode[c]) return;
+      var pts = [];
+      allWeeks.forEach(function(wk, wi){
+        if(byCode[c][wk]){
+          var arr = byCode[c][wk];
+          var avg = arr.reduce(function(a,b){ return a+b; }, 0) / arr.length;
+          pts.push({ weekIndex: wi, seconds: avg });
+        }
+      });
+      if(pts.length) series[c] = pts;
+    });
+    var activeCodes = codes.filter(function(c){ return series[c] && series[c].length; });
+    if(!activeCodes.length){
+      return '<div class="chart-empty">Aún no hay suficientes datos para comparar por semana.</div>';
+    }
+
+    var allVals = [];
+    activeCodes.forEach(function(c){ series[c].forEach(function(p){ allVals.push(p.seconds); }); });
+    var minS = Math.min.apply(null, allVals), maxS = Math.max.apply(null, allVals);
+    if(minS === maxS){ minS = Math.max(0, minS - 10); maxS = maxS + 10; }
+
+    var W = 320, H = 170, padL = 40, padR = 12, padT = 16, padB = 22;
+    var innerW = W - padL - padR, innerH = H - padT - padB;
+    var weekCount = allWeeks.length;
+    function xFor(wi){ return weekCount <= 1 ? padL + innerW/2 : padL + (innerW * (wi/(weekCount-1))); }
+    function yFor(sec){ return padT + innerH * ((sec - minS) / (maxS - minS)); }
+    var colors = ["#33c7c1","#ff5a36","#ffcf5c","#8bd450","#5ccfe6","#ff8a5c"];
+
+    var svg = '<svg viewBox="0 0 '+W+' '+H+'" class="compare-chart-svg" preserveAspectRatio="xMidYMid meet">';
+    svg += '<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(padT+innerH)+'" class="chart-axis"/>';
+    svg += '<line x1="'+padL+'" y1="'+(padT+innerH)+'" x2="'+(padL+innerW)+'" y2="'+(padT+innerH)+'" class="chart-axis"/>';
+    svg += '<text x="4" y="'+(padT+4)+'" class="chart-axis-label">'+fmtTime(minS)+'</text>';
+    svg += '<text x="4" y="'+(padT+innerH+2)+'" class="chart-axis-label">'+fmtTime(maxS)+'</text>';
+    if(weekCount){
+      svg += '<text x="'+xFor(0).toFixed(1)+'" y="'+(padT+innerH+14)+'" text-anchor="middle" class="chart-axis-label">'+weekLabel(allWeeks[0])+'</text>';
+      if(weekCount > 1){
+        svg += '<text x="'+xFor(weekCount-1).toFixed(1)+'" y="'+(padT+innerH+14)+'" text-anchor="middle" class="chart-axis-label">'+weekLabel(allWeeks[weekCount-1])+'</text>';
+      }
+    }
+    activeCodes.forEach(function(code, ci){
+      var pts = series[code];
+      var color = colors[ci % colors.length];
+      var path = "";
+      pts.forEach(function(p, i){
+        var x = xFor(p.weekIndex), y = yFor(p.seconds);
+        path += (i===0 ? "M" : "L") + x.toFixed(1) + "," + y.toFixed(1) + " ";
+      });
+      svg += '<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+      pts.forEach(function(p){
+        var x = xFor(p.weekIndex), y = yFor(p.seconds);
+        svg += '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="3.2" fill="'+color+'"/>';
+      });
+    });
+    svg += '</svg>';
+
+    var legend = '<div class="chart-legend">';
+    activeCodes.forEach(function(code, ci){
+      legend += '<span class="chart-legend-item"><span class="chart-dot" style="background:'+colors[ci % colors.length]+'"></span>'+escapeHtml(shareCodeLabel(code))+'</span>';
+    });
+    legend += '</div>';
+
+    var targetHtml = routine.weeklyTarget ? '<div class="chart-hint">Objetivo: '+routine.weeklyTarget+' vez'+(routine.weeklyTarget===1?'':'es')+' por semana</div>' : '';
+
+    return '<div class="compare-chart">'+svg+legend+'<div class="chart-hint">Cada punto es la media de esa semana. Cuanto más arriba, más rápido.</div>'+targetHtml+'</div>';
+  }
+
+  function renderExplore(){
+    var html = "";
+    html += '<div class="screen">';
+    html += '<div class="topbar"><button class="btn btn-ghost btn-sm" data-action="back-home">‹ Rutinas</button></div>';
+    html += '<div class="explore-title">🌍 Todo el mundo</div>';
+    if(publicRoutinesList === "loading" || publicRoutinesList === null){
+      html += '<div class="empty">Cargando rutinas públicas…</div>';
+    }else if(!publicRoutinesList.length){
+      html += '<div class="empty"><span class="mark-big">Nada por aquí todavía</span>Cuando alguien haga pública una rutina, aparecerá en esta lista para que te la lleves a tu Rutinario.</div>';
+    }else{
+      html += '<div class="routine-list">';
+      publicRoutinesList.forEach(function(p, pi){
+        var totalP = routineTotalSeconds({ steps: p.steps||[], rounds: p.rounds||1 });
+        html += '<div class="card routine-card" style="--accent:'+routineAccent(pi)+'">';
+        html += '<div class="head"><span class="dot-accent"></span><h3>'+escapeHtml(p.name||"Sin nombre")+'</h3></div>';
+        html += '<div class="meta">'+(p.steps?p.steps.length:0)+' ejercicio'+((p.steps&&p.steps.length===1)?"":"s")+' · '+fmtTime(totalP)+' total</div>';
+        html += '<div class="actions"><button class="btn btn-primary btn-lg" data-action="add-public-routine" data-id="'+p.id+'">+ Añadir a mi Rutinario</button></div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
     return html;
   }
 
@@ -1450,11 +1932,27 @@
     return html;
   }
 
+  function metricBox(labelText, unit, inputHtml, chipsHtml, extraClass){
+    var html = '<div class="metric-box'+(extraClass?' '+extraClass:'')+'">';
+    html += '<label>'+labelText+'</label>';
+    html += '<div class="metric-input-row">'+inputHtml+(unit?'<span class="metric-unit">'+unit+'</span>':'')+'</div>';
+    if(chipsHtml) html += chipsHtml;
+    html += '</div>';
+    return html;
+  }
+
   function renderStepCard(step, i, count){
     var html = '<div class="card step-card">';
-    html += '<div class="step-top">';
+
+    html += '<div class="step-head">';
     html += '<span class="step-index">'+(i+1)+'</span>';
     html += '<input class="step-name" data-field="name" data-step="'+step.id+'" value="'+escapeHtml(step.name)+'" placeholder="Nombre del ejercicio">';
+    html += '<div class="step-menu">';
+    html += '<button class="tool-btn" data-action="move-step" data-dir="up" data-step="'+step.id+'" '+(i===0?'disabled':'')+' title="Subir">▲</button>';
+    html += '<button class="tool-btn" data-action="move-step" data-dir="down" data-step="'+step.id+'" '+(i===count-1?'disabled':'')+' title="Bajar">▼</button>';
+    html += '<button class="tool-btn" data-action="duplicate-step" data-step="'+step.id+'" title="Duplicar">⧉</button>';
+    html += '<button class="tool-btn remove" data-action="remove-step" data-step="'+step.id+'" title="Eliminar">✕</button>';
+    html += '</div>';
     html += '</div>';
 
     html += '<div class="seg-toggle">';
@@ -1462,41 +1960,28 @@
     html += '<button type="button" class="'+(step.type==='reps'?'active type-reps':'')+'" data-action="set-type" data-type="reps" data-step="'+step.id+'">Repeticiones</button>';
     html += '</div>';
 
+    html += '<div class="step-grid">';
+
     if(step.type === "time"){
-      html += '<div class="field-row"><div class="field"><label>Duración (segundos)</label>';
-      html += '<input type="number" min="1" data-field="seconds" data-step="'+step.id+'" value="'+step.seconds+'">';
-      html += chipsRow("seconds", step.id, step.seconds, [15,20,30,45,60,90,120]);
-      html += '</div></div>';
+      var secInput = '<input type="number" min="1" data-field="seconds" data-step="'+step.id+'" value="'+step.seconds+'">';
+      html += metricBox("Duración", "seg", secInput, chipsRow("seconds", step.id, step.seconds, [15,20,30,45,60,90,120]), "metric-box-wide");
     }else{
-      html += '<div class="field-row">';
-      html += '<div class="field"><label>Repeticiones</label>';
-      html += '<input type="number" min="0" data-field="reps" data-step="'+step.id+'" value="'+step.reps+'">';
-      html += '</div>';
-      html += '</div>';
-      html += '<div class="field-row"><div class="field"><label>Tiempo estimado (para el total)</label>';
-      html += '<input type="number" min="1" data-field="estSeconds" data-step="'+step.id+'" value="'+step.estSeconds+'">';
-      html += chipsRow("estSeconds", step.id, step.estSeconds, [20,30,40,60,90]);
-      html += '</div></div>';
+      var repsInput = '<input type="number" min="0" data-field="reps" data-step="'+step.id+'" value="'+step.reps+'">';
+      html += metricBox("Repeticiones", "", repsInput, "", "metric-box-wide");
     }
 
-    html += '<div class="field-row"><div class="field"><label>Series</label>';
-    html += '<input type="number" min="1" data-field="sets" data-step="'+step.id+'" value="'+(step.sets!=null?step.sets:1)+'">';
-    html += chipsRow("sets", step.id, step.sets!=null?step.sets:1, [1,2,3,4,5]);
-    html += '</div></div>';
+    var setsInput = '<input type="number" min="1" data-field="sets" data-step="'+step.id+'" value="'+(step.sets!=null?step.sets:1)+'">';
+    html += metricBox("Series", "", setsInput, chipsRow("sets", step.id, step.sets!=null?step.sets:1, [1,2,3,4,5]));
 
-    html += '<div class="field-row"><div class="field"><label>Descanso después (segundos)</label>';
-    html += '<input type="number" min="0" data-field="rest" data-step="'+step.id+'" value="'+step.rest+'">';
-    html += chipsRow("rest", step.id, step.rest, [0,10,15,20,30,45,60]);
-    html += '</div></div>';
+    var restInput = '<input type="number" min="0" data-field="rest" data-step="'+step.id+'" value="'+step.rest+'">';
+    html += metricBox("Descanso", "seg", restInput, chipsRow("rest", step.id, step.rest, [0,10,15,20,30,45,60]));
 
-    html += '<div class="step-bottom">';
-    html += '<div class="step-tools">';
-    html += '<button class="tool-btn" data-action="move-step" data-dir="up" data-step="'+step.id+'" '+(i===0?'disabled':'')+' title="Subir">▲</button>';
-    html += '<button class="tool-btn" data-action="move-step" data-dir="down" data-step="'+step.id+'" '+(i===count-1?'disabled':'')+' title="Bajar">▼</button>';
-    html += '<button class="tool-btn" data-action="duplicate-step" data-step="'+step.id+'" title="Duplicar">⧉</button>';
-    html += '</div>';
-    html += '<button class="tool-btn remove" data-action="remove-step" data-step="'+step.id+'" title="Eliminar">✕</button>';
-    html += '</div>';
+    if(step.type === "reps"){
+      var estInput = '<input type="number" min="1" data-field="estSeconds" data-step="'+step.id+'" value="'+step.estSeconds+'">';
+      html += metricBox("Tiempo estimado (para el total)", "seg", estInput, chipsRow("estSeconds", step.id, step.estSeconds, [20,30,40,60,90]), "metric-box-wide metric-box-secondary");
+    }
+
+    html += '</div>'; // step-grid
 
     html += '</div>';
     return html;
@@ -1634,6 +2119,7 @@
   ensureSyncCode();
   render();
   pushToCloud();
+  checkSharedRoutines();
 })();
 </script>
 </body>
