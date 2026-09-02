@@ -364,8 +364,13 @@
   .reps-stopwatch{ font-family:var(--font-mono); color:var(--muted-2); font-size:15px; margin-top:4px; }
   .reps-hint{ color:var(--muted-2); font-size:13px; margin-top:6px; }
 
-  .next-up{ color:var(--muted-2); font-size:14px; }
-  .next-up b{ color:var(--muted); font-weight:600; }
+  .next-up{
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:var(--rest-soft); border:1px solid var(--rest);
+    border-radius:14px; padding:10px 22px; max-width:100%;
+  }
+  .next-up-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--rest); font-weight:700; }
+  .next-up-name{ font-size:18px; color:var(--chalk); font-weight:700; text-wrap:balance; text-align:center; }
 
   .controls{ padding:10px 18px 6px; display:flex; flex-direction:column; gap:12px; }
   .transport{ display:flex; align-items:center; justify-content:center; gap:16px; }
@@ -526,12 +531,12 @@
       if(raw){
         var parsed = JSON.parse(raw);
         if(parsed && parsed.routines && parsed.routines.length){
-          parsed.settings = Object.assign({ sound:true, vibration:true, voice:false }, parsed.settings || {});
+          parsed.settings = Object.assign({ sound:true, vibration:true, voice:false, announce:true }, parsed.settings || {});
           return parsed;
         }
       }
     }catch(e){}
-    var seeded = { routines: seedRoutines(), settings:{ sound:true, vibration:true, voice:false } };
+    var seeded = { routines: seedRoutines(), settings:{ sound:true, vibration:true, voice:false, announce:true } };
     return seeded;
   }
 
@@ -622,7 +627,7 @@
         var data = doc.data();
         if(data && data.routines && data.routines.length){
           state.routines = data.routines;
-          state.settings = Object.assign({ sound:true, vibration:true, voice:false }, data.settings||{});
+          state.settings = Object.assign({ sound:true, vibration:true, voice:false, announce:true }, data.settings||{});
           try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
         }
         syncCode = code;
@@ -678,6 +683,11 @@
      position in the list — a quick visual way to tell routines apart at a glance */
   var ROUTINE_ACCENTS = ["#ff5a36","#33c7c1","#ffcf5c","#8bd450","#5ccfe6","#ff8a5c"];
   function routineAccent(index){ return ROUTINE_ACCENTS[index % ROUTINE_ACCENTS.length]; }
+
+  /* how many seconds before a rest period ends should the app say out loud
+     what's coming up next (if the rest is shorter than this, it announces
+     right at the start instead, since there's no time to wait) */
+  var ANNOUNCE_LEAD_SECONDS = 5;
 
   /* ============ view / routing ============ */
   var view = "home";          // 'home' | 'editor' | 'player'
@@ -762,6 +772,19 @@
 
   function tick3(){
     beep(520,70,0.16,"sine");
+  }
+
+  function speakText(text){
+    if(!state.settings.announce) return;
+    try{
+      if(!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel(); // don't let announcements pile up
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = "es-ES";
+      u.rate = 1;
+      u.pitch = 1;
+      window.speechSynthesis.speak(u);
+    }catch(e){}
   }
 
   /* ============ wake lock ============ */
@@ -1007,6 +1030,10 @@
       if(remaining !== player.lastTickSecond){
         player.lastTickSecond = remaining;
         if(remaining <= 3 && remaining > 0) tick3();
+        if(item.kind === "rest" && item.nextName){
+          var announceAt = item.seconds > ANNOUNCE_LEAD_SECONDS ? ANNOUNCE_LEAD_SECONDS : item.seconds;
+          if(remaining === announceAt) speakText("Siguiente: " + item.nextName);
+        }
         updateTimerDom(remaining, item);
         if(remaining <= 0){
           if(item.kind === "exercise"){ alertExerciseEnd(); } else { alertRestEnd(); }
@@ -1211,6 +1238,7 @@
     else if(action === "exit-workout"){ exitWorkout(); }
     else if(action === "toggle-voice"){ toggleVoice(); }
     else if(action === "toggle-sound"){ state.settings.sound = !state.settings.sound; persist(); render(); }
+    else if(action === "toggle-announce"){ state.settings.announce = !state.settings.announce; persist(); render(); }
     else if(action === "restart-routine"){ startWorkout(id); }
     else if(action === "goal-chip"){
       var routine7 = findRoutine(editingId);
@@ -1539,6 +1567,10 @@
       html += '<h2 class="exercise-name">'+escapeHtml(item.name)+'</h2>';
     }
 
+    if(isRest && item.nextName){
+      html += '<div class="next-up"><span class="next-up-label">Siguiente</span><span class="next-up-name">'+escapeHtml(item.nextName)+'</span></div>';
+    }
+
     if(isTimed){
       var pct = item.seconds>0 ? Math.max(0,Math.min(100,(player.remaining/item.seconds)*100)) : 0;
       html += '<div class="timer-digits '+(isRest?'rest':'work')+'" id="timerDigits">'+fmtTime(player.remaining)+'</div>';
@@ -1550,10 +1582,6 @@
       html += '<div class="reps-stopwatch" id="repsStopwatch">'+fmtTime(player.repsElapsed)+'</div>';
       html += '<div class="reps-hint">Pulsa «Hecho»'+(state.settings.voice?' o di «hecho»':'')+' al terminar</div>';
       html += '</div>';
-    }
-
-    if(isRest && item.nextName){
-      html += '<div class="next-up">Siguiente: <b>'+escapeHtml(item.nextName)+'</b></div>';
     }
 
     html += '</div>'; // hero
@@ -1587,6 +1615,7 @@
       : '<span class="dot"></span>';
     html += '<button class="'+voiceClass+'" data-action="toggle-voice" '+(!voiceSupported?'disabled':'')+'>'+voiceIndicator+' 🎤 '+voiceLabel+'</button>';
     html += '<button class="toggle-pill '+(state.settings.sound?'on':'')+'" data-action="toggle-sound"><span class="dot '+(state.settings.sound?'on':'')+'"></span>'+(state.settings.sound?'🔔 Sonido':'🔕 Silencio')+'</button>';
+    html += '<button class="toggle-pill '+(state.settings.announce?'on':'')+'" data-action="toggle-announce"><span class="dot '+(state.settings.announce?'on':'')+'"></span>'+(state.settings.announce?'📢 Aviso siguiente':'🔇 Sin aviso')+'</button>';
     html += '</div>';
 
     if(voiceSupported){
