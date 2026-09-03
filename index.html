@@ -1167,7 +1167,14 @@
       u.rate = 1;
       u.pitch = 1;
       u.onstart = function(){ ttsSpeaking = true; };
-      var clearSpeaking = function(){ window.setTimeout(function(){ ttsSpeaking = false; }, 500); };
+      // Speech-recognition engines can take a couple of seconds of trailing silence
+      // after the phrase ends before they finalize and fire onresult, so a short tail
+      // isn't enough to cover the mic overhearing Marcador's own voice (e.g. the word
+      // "siguiente" in "Siguiente: X" being misheard as the skip command). Scale the
+      // tail with how long the announced phrase is so longer names get more buffer.
+      var wordCount = text.trim().split(/\s+/).length || 1;
+      var ttsTailMs = Math.min(4500, 1800 + wordCount*350);
+      var clearSpeaking = function(){ window.setTimeout(function(){ ttsSpeaking = false; }, ttsTailMs); };
       u.onend = clearSpeaking;
       u.onerror = clearSpeaking;
       window.speechSynthesis.speak(u);
