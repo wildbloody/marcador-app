@@ -153,20 +153,10 @@
   .icon-text-btn:hover{ color:var(--text); background:var(--surface-2); }
 
   /* ---------- home ---------- */
-  .hero-next{
-    position:relative; margin:var(--sp-1) var(--sp-5) var(--sp-6); padding:var(--sp-6) var(--sp-5) var(--sp-5);
-    border-radius:var(--r-lg); background:var(--surface); border:1px solid var(--border);
-  }
-  .hero-next-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-3); }
-  .hero-next-label{ font-size:11.5px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); }
-  .hero-next-name{ font-family:var(--font-display); font-weight:400; font-size:clamp(28px,8vw,36px); line-height:1.08; color:var(--text); margin-top:3px; overflow-wrap:anywhere; }
-  .hero-next-meta{ color:var(--text-2); font-size:13.5px; margin-top:7px; font-variant-numeric:tabular-nums; }
-  .hero-next-badges{ display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
   .badge{
     font-size:11px; font-weight:700; padding:3px 9px; border-radius:var(--r-full); background:var(--surface-2); color:var(--text-2);
     display:inline-flex; align-items:center; gap:4px;
   }
-  .hero-next-cta{ margin-top:var(--sp-5); }
   .btn-start{
     width:100%; height:54px; border:none; border-radius:var(--r-md); background:var(--accent); color:var(--accent-ink);
     font-weight:800; font-size:15.5px; letter-spacing:0.01em; cursor:pointer;
@@ -174,24 +164,42 @@
   }
   .btn-start:active{ transform:scale(0.98); }
   .btn-start[disabled]{ opacity:0.35; cursor:not-allowed; }
-  .btn-start.lg{ height:60px; font-size:17px; }
+  .btn-start.lg{ height:58px; font-size:16.5px; }
+
+  .home-tabs{ margin:2px var(--sp-5) var(--sp-4); }
+
+  .tab-empty{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:var(--sp-7) var(--sp-5); text-align:center; }
+  .tab-empty-text{ color:var(--text-2); font-size:14px; line-height:1.55; max-width:280px; }
 
   .routine-list{ display:flex; flex-direction:column; padding:0 var(--sp-5); }
-  .routine-row{ position:relative; padding:13px 0; border-bottom:1px solid var(--border); }
+  .routine-row{ position:relative; padding:12px 0; border-bottom:1px solid var(--border); }
   .routine-list .routine-row:last-child{ border-bottom:none; }
-  .routine-row-top{ display:flex; align-items:center; gap:var(--sp-3); }
+  .routine-row-top{ display:flex; align-items:center; gap:10px; cursor:pointer; }
   .routine-row-main{ flex:1; min-width:0; }
   .routine-row-name{ font-family:var(--font-ui); font-weight:700; font-size:16px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .routine-row-meta{ display:flex; align-items:center; gap:5px; color:var(--text-2); font-size:12.5px; margin-top:2px; font-variant-numeric:tabular-nums; }
   .routine-row-actions{ display:flex; align-items:center; gap:2px; flex-shrink:0; }
+  .fav-btn{
+    appearance:none; border:none; background:none; color:var(--text-3); padding:6px; margin-left:-6px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:color .12s ease, transform .1s ease;
+  }
+  .fav-btn:hover{ color:var(--text-2); }
+  .fav-btn.on{ color:var(--accent); }
+  .fav-btn:active{ transform:scale(0.85); }
+  .row-chevron{ color:var(--text-3); flex-shrink:0; display:flex; transition:transform .15s ease; }
+  .routine-row-top.expanded .row-chevron{ transform:rotate(180deg); }
   .row-play-btn{
-    appearance:none; border:none; background:var(--surface-2); color:var(--text); width:40px; height:40px;
+    appearance:none; border:none; background:var(--surface-2); color:var(--accent); width:40px; height:40px;
     border-radius:var(--r-full); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
     transition:background .12s ease, color .12s ease;
   }
-  .row-play-btn:hover{ background:var(--accent-soft); color:var(--accent); }
+  .row-play-btn:hover{ background:var(--accent-soft); }
   .row-play-btn:active{ transform:scale(0.92); }
   .row-play-btn[disabled]{ opacity:0.35; cursor:not-allowed; }
+  .routine-row-expand{ padding:var(--sp-4) 0 2px 26px; }
+  .routine-row-full-meta{ color:var(--text-2); font-size:13px; margin-bottom:10px; font-variant-numeric:tabular-nums; }
+  .row-badges{ display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
 
   .menu-backdrop{ position:fixed; inset:0; z-index:29; background:transparent; }
   .routine-menu{
@@ -591,6 +599,8 @@
     if(r.weeklyTarget === undefined) r.weeklyTarget = null;
     if(r.isPublic === undefined) r.isPublic = false;
     if(r.publicId === undefined) r.publicId = null;
+    if(r.favorite === undefined) r.favorite = false;
+    if(r.imported === undefined) r.imported = false;
     return r;
   }
 
@@ -957,7 +967,8 @@
       targetMinutes: null,
       rounds: pub.rounds || 1,
       steps: Array.isArray(pub.steps) ? JSON.parse(JSON.stringify(pub.steps)) : [],
-      history: []
+      history: [],
+      imported: true
     });
     copy.steps.forEach(function(s){ s.id = uid(); });
     state.routines.push(copy);
@@ -1026,7 +1037,9 @@
     pencil: '<path d="M4 20h4l10-10-4-4L4 16v4z"/><line x1="13" y1="7" x2="17" y2="11"/>',
     trophy: '<path d="M6 4h12v4a6 6 0 01-12 0V4z"/><path d="M6 5H3v1a4 4 0 004 4"/><path d="M18 5h3v1a4 4 0 01-4 4"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="8" y1="20" x2="16" y2="20"/>',
     sliders: '<line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/>',
-    "trending-up": '<polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/>'
+    "trending-up": '<polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/>',
+    star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    "star-filled": '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none"/>'
   };
   function icon(name, size){
     var s = size || 16;
@@ -1041,6 +1054,8 @@
   var showChartForId = null;    // which routine's chart (progress or shared comparison) is open
   var openMenuId = null;        // which routine's overflow menu (editar/duplicar/eliminar) is open
   var syncPanelOpen = false;    // whether the sync-code drawer is expanded on the home screen
+  var homeTab = "mine";         // 'mine' | 'shared' -- which Home tab (Mis rutinas / Compartidas) is active
+  var expandedRoutineId = null; // which routine row is expanded (summary + big Empezar) on the home screen
   var configPanelOpen = false;  // whether the "Configuración" panel is expanded in the editor
   var audioPanelOpen = false;   // whether the audio (voz/sonido/aviso) panel is expanded in the player
   var collapsedSteps = {};      // stepId -> false once the user (or add/duplicate-step) opens it; collapsed by default
@@ -1537,6 +1552,8 @@
         copy.shareId = null;
         copy.isPublic = false;
         copy.publicId = null;
+        copy.imported = false;
+        copy.favorite = false;
         copy.steps.forEach(function(s){ s.id = uid(); });
         state.routines.push(copy);
         persist();
@@ -1559,6 +1576,16 @@
     }else if(action === "toggle-sync-panel"){
       syncPanelOpen = !syncPanelOpen;
       render();
+    }else if(action === "toggle-home-tab"){
+      var tabWanted = t.getAttribute("data-tab");
+      homeTab = tabWanted === "shared" ? "shared" : "mine";
+      render();
+    }else if(action === "toggle-routine-expand"){
+      expandedRoutineId = expandedRoutineId === id ? null : id;
+      render();
+    }else if(action === "toggle-favorite"){
+      var routineFav = findRoutine(id);
+      if(routineFav){ routineFav.favorite = !routineFav.favorite; persist(); render(); }
     }else if(action === "toggle-config-panel"){
       configPanelOpen = !configPanelOpen;
       render();
@@ -1768,16 +1795,9 @@
     if(view === "home") setSyncStatus(syncStatus);
   }
 
-  function pickFeaturedRoutine(list){
-    if(!list.length) return null;
-    var best = list[0];
-    var bestTs = (best.history && best.history.length) ? best.history[0].ts : 0;
-    for(var i=1;i<list.length;i++){
-      var r = list[i];
-      var ts = (r.history && r.history.length) ? r.history[0].ts : 0;
-      if(ts < bestTs){ best = r; bestTs = ts; }
-    }
-    return best;
+  function sortByFavorite(list){
+    // stable sort: favorites first, original relative order kept within each group
+    return list.slice().sort(function(a,b){ return (b.favorite?1:0) - (a.favorite?1:0); });
   }
 
   function weeklySessionCount(){
@@ -1802,6 +1822,43 @@
       html += '</div>';
     }
     if(expandedHistoryId === r.id){ html += renderHistory(r); }
+    return html;
+  }
+
+  function renderRoutineRow(r){
+    var total = routineTotalSeconds(r);
+    var roundsN = Math.max(1, Number(r.rounds)||1);
+    var expanded = expandedRoutineId === r.id;
+    var html = '<div class="routine-row">';
+    html += '<div class="routine-row-top'+(expanded?' expanded':'')+'" data-action="toggle-routine-expand" data-id="'+r.id+'" role="button" tabindex="0">';
+    html += '<button class="fav-btn'+(r.favorite?' on':'')+'" data-action="toggle-favorite" data-id="'+r.id+'" title="'+(r.favorite?'Quitar de favoritas':'Marcar como favorita')+'">'+icon(r.favorite?"star-filled":"star",17)+'</button>';
+    html += '<div class="routine-row-main">';
+    html += '<div class="routine-row-name">'+escapeHtml(r.name||"Sin nombre")+'</div>';
+    html += '<div class="routine-row-meta"><span>'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+' · '+fmtTime(total)+'</span>';
+    if(r.isPublic) html += icon("globe",11);
+    if(r.linkedCodes && r.linkedCodes.length) html += icon("link",11);
+    html += '</div>';
+    html += '</div>';
+    html += '<div class="routine-row-actions">';
+    html += '<button class="row-play-btn" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+' title="Empezar">'+icon("play",16)+'</button>';
+    html += '<button class="icon-btn" data-action="toggle-routine-menu" data-id="'+r.id+'" title="Más opciones">'+icon("more-vertical",18)+'</button>';
+    html += '</div>';
+    html += '<span class="row-chevron">'+icon("chevron-down",16)+'</span>';
+    html += '</div>'; // routine-row-top
+
+    if(expanded){
+      html += '<div class="routine-row-expand">';
+      html += '<div class="routine-row-full-meta">'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+(roundsN>1?' · '+roundsN+' vueltas':'')+' · '+fmtTime(total)+(r.targetMinutes?' · meta '+r.targetMinutes+' min':'')+'</div>';
+      var badges = "";
+      if(r.isPublic) badges += '<span class="badge">'+icon("globe",11)+' Pública</span>';
+      if(r.linkedCodes && r.linkedCodes.length) badges += '<span class="badge">'+icon("link",11)+' Compartida ('+(r.linkedCodes.length+1)+')</span>';
+      if(badges) html += '<div class="row-badges">'+badges+'</div>';
+      html += '<button class="btn-start lg" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+'>'+icon("play",18)+' Empezar</button>';
+      html += '</div>';
+    }
+
+    html += routineMenuAndHistory(r);
+    html += '</div>'; // routine-row
     return html;
   }
 
@@ -1843,54 +1900,39 @@
       html += '<button class="link-btn" data-action="open-explore">Explorar rutinas</button>';
       html += '</div></div>';
     }else{
-      var featured = pickFeaturedRoutine(state.routines);
-      var rest = state.routines.filter(function(r){ return r.id !== featured.id; });
+      var mineList = state.routines.filter(function(r){ return !r.imported; });
+      var sharedList = state.routines.filter(function(r){ return r.imported; });
+      var activeTab = homeTab === "shared" ? "shared" : "mine";
 
-      var fTotal = routineTotalSeconds(featured);
-      var fRounds = Math.max(1, Number(featured.rounds)||1);
-      var everDone = featured.history && featured.history.length;
-      html += '<div class="hero-next">';
-      html += '<div class="hero-next-top">';
-      html += '<div><div class="hero-next-label">'+(everDone?'Te toca':'Empieza por aquí')+'</div>';
-      html += '<div class="hero-next-name">'+escapeHtml(featured.name||"Sin nombre")+'</div></div>';
-      html += '<button class="icon-btn" data-action="toggle-routine-menu" data-id="'+featured.id+'" title="Más opciones">'+icon("more-vertical",18)+'</button>';
-      html += '</div>';
-      html += '<div class="hero-next-meta">'+featured.steps.length+' ejercicio'+(featured.steps.length===1?"":"s")+(fRounds>1?' · '+fRounds+' vueltas':'')+' · '+fmtTime(fTotal)+(featured.targetMinutes?' · meta '+featured.targetMinutes+' min':'')+'</div>';
-      var heroBadges = "";
-      if(featured.isPublic) heroBadges += '<span class="badge">'+icon("globe",11)+' Pública</span>';
-      if(featured.linkedCodes && featured.linkedCodes.length) heroBadges += '<span class="badge">'+icon("link",11)+' Compartida ('+(featured.linkedCodes.length+1)+')</span>';
-      if(heroBadges) html += '<div class="hero-next-badges">'+heroBadges+'</div>';
-      html += '<div class="hero-next-cta"><button class="btn-start lg" data-action="start-routine" data-id="'+featured.id+'" '+(featured.steps.length?'':'disabled')+'>'+icon("play",18)+' Empezar</button></div>';
-      html += routineMenuAndHistory(featured);
+      html += '<div class="seg-toggle home-tabs">';
+      html += '<button type="button" class="'+(activeTab==="mine"?"active":"")+'" data-action="toggle-home-tab" data-tab="mine">Mis rutinas</button>';
+      html += '<button type="button" class="'+(activeTab==="shared"?"active":"")+'" data-action="toggle-home-tab" data-tab="shared">Compartidas</button>';
       html += '</div>';
 
-      if(rest.length){
-        html += '<div class="section-label">Tus rutinas</div>';
+      var activeList = sortByFavorite(activeTab === "shared" ? sharedList : mineList);
+
+      if(!activeList.length){
+        html += '<div class="tab-empty">';
+        if(activeTab === "shared"){
+          html += '<div class="tab-empty-text">Aún no has añadido ninguna rutina de la comunidad.</div>';
+          html += '<button class="link-btn" data-action="open-explore">Explorar rutinas</button>';
+        }else{
+          html += '<div class="tab-empty-text">Aún no tienes ninguna rutina propia.</div>';
+          html += '<button class="link-btn" data-action="new-routine">Crear rutina</button>';
+        }
+        html += '</div>';
+      }else{
         html += '<div class="routine-list">';
-        rest.forEach(function(r){
-          var total = routineTotalSeconds(r);
-          var roundsN = Math.max(1, Number(r.rounds)||1);
-          html += '<div class="routine-row">';
-          html += '<div class="routine-row-top">';
-          html += '<div class="routine-row-main">';
-          html += '<div class="routine-row-name">'+escapeHtml(r.name||"Sin nombre")+'</div>';
-          html += '<div class="routine-row-meta"><span>'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+(roundsN>1?' · '+roundsN+' vueltas':'')+' · '+fmtTime(total)+'</span>';
-          if(r.isPublic) html += icon("globe",11);
-          if(r.linkedCodes && r.linkedCodes.length) html += icon("link",11);
-          html += '</div>';
-          html += '</div>';
-          html += '<div class="routine-row-actions">';
-          html += '<button class="row-play-btn" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+' title="Empezar">'+icon("play",16)+'</button>';
-          html += '<button class="icon-btn" data-action="toggle-routine-menu" data-id="'+r.id+'" title="Más opciones">'+icon("more-vertical",18)+'</button>';
-          html += '</div>';
-          html += '</div>';
-          html += routineMenuAndHistory(r);
-          html += '</div>';
-        });
+        activeList.forEach(function(r){ html += renderRoutineRow(r); });
+        html += '</div>';
+        html += '<div class="new-routine-bar">';
+        if(activeTab === "shared"){
+          html += '<button class="add-ghost" data-action="open-explore">'+icon("globe",16)+' Explorar más rutinas</button>';
+        }else{
+          html += '<button class="add-ghost" data-action="new-routine">'+icon("plus",16)+' Nueva rutina</button>';
+        }
         html += '</div>';
       }
-
-      html += '<div class="new-routine-bar"><button class="add-ghost" data-action="new-routine">'+icon("plus",16)+' Nueva rutina</button></div>';
     }
 
     html += '<details class="help"><summary>Cómo funciona</summary><p>Cada ejercicio puede ser <b>por tiempo</b> (cuenta atrás y avisa sola cuando termina) o <b>por repeticiones</b> (tú marcas cuándo has terminado, con el botón o diciendo «hecho»). Entre ejercicios se añade el descanso que definas. El total se calcula solo mientras construyes la rutina, para que puedas ajustarla a los minutos que quieras.</p></details>';
