@@ -483,6 +483,7 @@
     font-size:12.5px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-2);
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;
   }
+  .player-top .icon-btn{ flex-shrink:0; }
   .player-total{
     display:block; text-align:center; margin-top:2px;
     font-family:var(--font-mono); color:var(--text-2); font-size:12px; font-variant-numeric:tabular-nums;
@@ -1847,7 +1848,11 @@
         render();
       }
     }else if(action === "start-tour"){
-      startTour();
+      startTour("home", TOUR_STEPS_HOME);
+    }else if(action === "start-tour-editor"){
+      startTour("editor", TOUR_STEPS_EDITOR);
+    }else if(action === "start-tour-player"){
+      startTour("player", TOUR_STEPS_PLAYER);
     }
   });
 
@@ -1945,7 +1950,7 @@
     app.innerHTML = html;
     if(view === "home") setSyncStatus(syncStatus);
     if(tourNode){
-      if(view !== "home") endTour();
+      if(view !== tourView) endTour();
       else setTimeout(tourReposition, 20);
     }
   }
@@ -2122,7 +2127,7 @@
     var total = routineTotalSeconds(routine);
     var html = "";
     html += '<div class="screen">';
-    html += '<div class="topbar"><button class="icon-text-btn" data-action="back-home">'+icon("chevron-left",16)+' Rutinas</button></div>';
+    html += '<div class="topbar"><button class="icon-text-btn" data-action="back-home">'+icon("chevron-left",16)+' Rutinas</button><button class="icon-btn" data-action="start-tour-editor" title="Ayuda guiada">'+icon("help-circle",18)+'</button></div>';
 
     html += '<div class="editor-header">';
     html += '<input class="name-input" data-field="routine-name" value="'+escapeHtml(routine.name)+'" placeholder="Nombre de la rutina">';
@@ -2588,6 +2593,7 @@
     html += '<div class="player-top">';
     html += '<button class="player-exit" data-action="exit-workout">'+icon("chevron-left",15)+' Salir</button>';
     html += '<span class="player-title">'+escapeHtml(routine.name)+'</span>';
+    html += '<button class="icon-btn sm" data-action="start-tour-player" title="Ayuda guiada">'+icon("help-circle",16)+'</button>';
     html += '</div>';
 
     var stepDotsActive = isRest ? -1 : stepNumber;
@@ -2612,7 +2618,7 @@
       // with no next exercise to preview); otherwise the "Siguiente" block below
       // carries the heading's job and showing "Descanso" twice was redundant.
       if(!item.nextName){
-        html += '<h2 class="exercise-name">Descanso</h2>';
+        html += '<h2 class="exercise-name">Último descanso</h2>';
       }
     }else{
       html += '<h2 class="exercise-name">'+escapeHtml(item.name)+'</h2>';
@@ -2699,7 +2705,7 @@
   // so it lives outside #app (appended to <body>) instead of going through the
   // normal render()/data-action pipeline. Steps whose target isn't present in
   // the current DOM (e.g. no routines yet) are skipped automatically.
-  var TOUR_STEPS = [
+  var TOUR_STEPS_HOME = [
     { sel:".wordmark", title:"Bienvenido a Marcador", text:"Un paseo rápido por lo más importante. Pulsa «Siguiente» para continuar, o «Salir» cuando quieras." },
     { sel:'[data-action="new-routine"]', title:"Crear una rutina", text:"Aquí creas una rutina nueva: añades los ejercicios, eliges si son por tiempo o por repeticiones, y cuánto descanso quieres entre ellos." },
     { sel:".routine-row .row-play-btn", title:"Empezar un entrenamiento", text:"El play arranca la rutina. Marcador te va guiando ejercicio a ejercicio, con avisos de voz y sonido." },
@@ -2711,15 +2717,35 @@
     { sel:'[data-action="open-profile"]', title:"Tu perfil", text:"Aquí ves el historial completo de tus entrenamientos -- fecha, hora y duración de cada sesión -- y puedes borrar lo que quieras." },
     { sel:".help", title:"¿Dudas?", text:"Este apartado explica cómo funcionan los tiempos, las repeticiones y los descansos. Con esto ya tienes lo esencial: ¡a entrenar!" }
   ];
+  var TOUR_STEPS_EDITOR = [
+    { sel:".name-input", title:"Nombre de la rutina", text:"Ponle un nombre para identificarla fácilmente en tu lista." },
+    { sel:".notes-input", title:"Notas", text:"Apunta aquí para qué está pensada esta rutina o cualquier recomendación a tener en cuenta al hacerla." },
+    { sel:".editor-stat", title:"Duración total", text:"Se calcula sola según los ejercicios, series y descansos que vayas añadiendo." },
+    { sel:'[data-action="toggle-config-panel"]', title:"Configuración", text:"Aquí defines un objetivo de minutos, el número de vueltas, y puedes compartir la rutina con un código para compararte con otra persona." },
+    { sel:".steps", title:"Ejercicios", text:"Cada ejercicio puede ser por tiempo o por repeticiones, con sus propias series y descanso. Pulsa uno para editarlo." },
+    { sel:'[data-action="add-step"]', title:"Añadir ejercicio", text:"Añade tantos ejercicios como quieras a la rutina." },
+    { sel:'.editor-footer [data-action="start-routine"]', title:"Empezar esta rutina", text:"Cuando esté lista, empieza el entrenamiento directamente desde aquí." }
+  ];
+  var TOUR_STEPS_PLAYER = [
+    { sel:".player-exit", title:"Salir cuando quieras", text:"Puedes salir del entrenamiento en cualquier momento desde aquí." },
+    { sel:".step-dots", title:"Tu progreso", text:"Cada punto es un ejercicio de la rutina: se va rellenando según avanzas." },
+    { sel:".transport", title:"Controles", text:"Pausa o reanuda el tiempo, y usa las flechas para volver al ejercicio anterior o saltarte el actual." },
+    { sel:'[data-action="confirm-done"]', title:"Ejercicios por repeticiones", text:"En los ejercicios de repeticiones, pulsa «Hecho» al terminar tu serie (o dilo en voz alta si activas la voz)." },
+    { sel:'[data-action="toggle-audio-panel"]', title:"Voz y sonido", text:"Aquí activas los avisos por voz -- para decir «hecho» o «pausa» sin tocar el móvil --, el sonido de los avisos y el aviso hablado del siguiente ejercicio." }
+  ];
   var tourNode = null;   // { hl, card } DOM elements, or null when the tour is closed
   var tourIndex = 0;
+  var tourSteps = TOUR_STEPS_HOME; // active step set for the tour currently open (or last opened)
+  var tourView = "home";           // which view the active tour belongs to -- closes itself if the user navigates away
 
   function tourVisibleSteps(){
-    return TOUR_STEPS.filter(function(s){ return document.querySelector(s.sel); });
+    return tourSteps.filter(function(s){ return document.querySelector(s.sel); });
   }
 
-  function startTour(){
-    if(view !== "home") return;
+  function startTour(forView, steps){
+    if(view !== forView) return;
+    tourSteps = steps;
+    tourView = forView;
     if(!tourVisibleSteps().length) return;
     tourIndex = 0;
     buildTourDom();
