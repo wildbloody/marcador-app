@@ -10,55 +10,67 @@
 <style>
   :root{
     color-scheme: dark;
-    --ink:#14171c;
-    --panel:#1c2129;
-    --panel-2:#242b35;
-    --panel-3:#2d3542;
-    --line: rgba(244,241,231,0.10);
-    --line-soft: rgba(244,241,231,0.06);
-    --chalk:#f2efe7;
-    --muted:#94a0b0;
-    --muted-2:#5f6773;
-    --work:#ff5a36;
-    --work-soft: rgba(255,90,54,0.16);
-    --rest:#33c7c1;
-    --rest-soft: rgba(51,199,193,0.16);
-    --go:#8bd450;
-    --go-soft: rgba(139,212,80,0.16);
-    --warn:#ffcf5c;
-    --warn-soft: rgba(255,207,92,0.16);
-    --radius: 10px;
-    --radius-lg: 18px;
+    --bg:#06080b;
+    --surface:#12151b;
+    --surface-2:#1b1f27;
+    --surface-3:#262b35;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.16);
+    --text:#f3f5f7;
+    --text-2:#8d94a1;
+    --text-3:#575d69;
+    --accent:#19e3ac;
+    --accent-soft: rgba(25,227,172,0.13);
+    --accent-ink:#00251b;
+    --work:#ff8a4c;
+    --work-soft: rgba(255,138,76,0.14);
+    --rest:#5b8dff;
+    --rest-soft: rgba(91,141,255,0.14);
+    --success:#19e3ac;
+    --success-soft: rgba(25,227,172,0.13);
+    --warn:#f5a742;
+    --warn-soft: rgba(245,167,66,0.14);
+    --danger:#ff5d5d;
+    --danger-soft: rgba(255,93,93,0.14);
+
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px; --sp-8:64px;
+    --r-sm:8px; --r-md:14px; --r-lg:22px; --r-full:999px;
+
     --font-display: 'Bebas Neue', 'Arial Narrow', sans-serif;
-    --font-body: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --font-ui: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
     --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
   }
 
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ margin:0; padding:0; }
   body{
-    background:var(--ink);
-    color:var(--chalk);
-    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-ui);
     min-height:100dvh;
     min-height:100vh;
     overflow-x:hidden;
   }
-  h1,h2,h3{ font-family:var(--font-display); letter-spacing:0.02em; text-wrap:balance; margin:0; }
+  h1,h2,h3{ font-weight:600; letter-spacing:0; text-wrap:balance; margin:0; }
   p{ margin:0; }
   button{ font-family:inherit; }
   input{ font-family:inherit; }
-  ::selection{ background:var(--rest); color:#0a0d10; }
+  ::selection{ background:var(--accent); color:var(--accent-ink); }
 
-  :focus-visible{ outline:2px solid var(--rest); outline-offset:2px; border-radius:4px; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+  .icon{ vertical-align:-3px; flex-shrink:0; }
+  .pr-tag{ font-size:9.5px; font-weight:700; color:var(--success); background:var(--success-soft); padding:1px 5px; border-radius:5px; margin-left:4px; letter-spacing:0.02em; }
 
   .app{
-    max-width:520px;
+    max-width:560px;
     margin:0 auto;
     min-height:100dvh;
     display:flex;
     flex-direction:column;
     position:relative;
+  }
+  @media (min-width:900px){
+    .app[data-view="home"], .app[data-view="editor"], .app[data-view="explore"]{ max-width:640px; }
   }
 
   /* ---------- shared bits ---------- */
@@ -67,394 +79,431 @@
     align-items:center;
     justify-content:space-between;
     gap:10px;
-    padding:18px 18px 10px;
-  }
-  .brand{
-    display:flex;
-    align-items:baseline;
-    gap:8px;
-  }
-  .brand .mark{
-    font-family:var(--font-display);
-    font-size:28px;
-    letter-spacing:0.03em;
-    color:var(--chalk);
-  }
-  .brand .tag{
-    font-size:11px;
-    color:var(--muted-2);
-    text-transform:uppercase;
-    letter-spacing:0.12em;
-  }
-
-  /* home screen wordmark: centered, stacked, with a small accent underline
-     so it reads as a logo lockup instead of a plain left-aligned label */
-  .topbar-home{
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:28px 18px 18px;
-    gap:0;
-  }
-  .topbar-home .brand{
-    flex-direction:column;
-    align-items:center;
-    gap:6px;
-  }
-  .topbar-home .brand .mark{
-    font-size:38px;
-    letter-spacing:0.08em;
-    position:relative;
-    padding-bottom:10px;
-  }
-  .topbar-home .brand .mark:after{
-    content:"";
-    position:absolute;
-    left:50%; bottom:0;
-    transform:translateX(-50%);
-    width:48px; height:3px;
-    border-radius:999px;
-    background:var(--rest);
-  }
-  .topbar-home .brand .tag{
-    letter-spacing:0.18em;
+    padding: var(--sp-5) var(--sp-5) var(--sp-2);
   }
 
   .btn{
     appearance:none;
-    border:1px solid var(--line);
-    background:var(--panel-2);
-    color:var(--chalk);
+    border:none;
+    background:var(--surface-2);
+    color:var(--text);
     padding:12px 16px;
-    border-radius:var(--radius);
-    font-size:15px;
-    font-weight:600;
+    border-radius:var(--r-md);
+    font-size:14.5px;
+    font-weight:700;
     cursor:pointer;
     display:inline-flex;
     align-items:center;
     justify-content:center;
     gap:8px;
-    transition:transform .08s ease, background .15s ease, border-color .15s ease;
+    transition:transform .08s ease, background .15s ease, filter .15s ease, color .15s ease;
   }
   .btn:active{ transform:scale(0.97); }
-  .btn-primary{ background:var(--rest); color:#0a1414; border-color:var(--rest); }
-  .btn-primary:hover{ filter:brightness(1.05); }
-  .btn-work{ background:var(--work); color:#1a0700; border-color:var(--work); }
-  .btn-go{ background:var(--go); color:#0d1a02; border-color:var(--go); }
-  .btn-ghost{ background:transparent; color:var(--muted); border-color:var(--line); }
-  .btn-ghost:hover{ color:var(--chalk); border-color:var(--muted-2); }
-  .btn-danger-ghost{ background:transparent; color:var(--work); border-color:var(--work-soft); }
+  .btn-primary{ background:var(--accent); color:var(--accent-ink); font-weight:800; }
+  .btn-primary:hover{ filter:brightness(1.08); }
+  .btn-go{ background:var(--success); color:var(--accent-ink); font-weight:800; }
+  .btn-ghost{ background:transparent; color:var(--text-2); border:1px solid var(--border); font-weight:600; }
+  .btn-ghost:hover{ color:var(--text); border-color:var(--border-strong); }
+  .btn-outline{ background:transparent; color:var(--accent); border:1.5px solid var(--accent); font-weight:700; }
+  .btn-outline:hover{ background:var(--accent-soft); }
   .btn-block{ width:100%; }
-  .btn-lg{ padding:16px 20px; font-size:17px; }
+  .btn-lg{ padding:15px 20px; font-size:16px; }
   .btn-icon{ padding:10px; border-radius:999px; width:44px; height:44px; }
   .btn[disabled]{ opacity:0.35; cursor:not-allowed; }
-  .btn-sm{ padding:8px 12px; font-size:13px; }
+  .btn-sm{ padding:8px 13px; font-size:12.5px; }
 
-  .card{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:var(--radius-lg);
-    padding:16px;
-  }
+  .card{ background:var(--surface); border-radius:var(--r-md); padding:var(--sp-4); }
 
   .screen{
     flex:1;
     display:flex;
     flex-direction:column;
-    padding-bottom:24px;
+    padding-bottom:var(--sp-7);
   }
 
-  .empty{
-    margin:40px 18px;
-    text-align:center;
-    color:var(--muted);
-    padding:32px 18px;
-    border:1px dashed var(--line);
-    border-radius:var(--radius-lg);
+  /* ---------- empty states ---------- */
+  .empty-state{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; gap:var(--sp-4); padding:var(--sp-8) var(--sp-5);
   }
-  .empty .mark-big{ font-family:var(--font-display); font-size:22px; color:var(--chalk); display:block; margin-bottom:6px; }
+  .empty-state-title{ font-family:var(--font-display); font-size:28px; line-height:1.15; letter-spacing:0.01em; color:var(--text); max-width:300px; }
+  .empty-state-sub{ color:var(--text-2); font-size:14px; line-height:1.55; max-width:280px; }
+  .empty-state-actions{ display:flex; flex-direction:column; align-items:center; gap:var(--sp-3); margin-top:var(--sp-2); }
+  .link-btn{ background:none; border:none; color:var(--text-2); font-size:13.5px; font-weight:700; cursor:pointer; padding:8px; }
+  .link-btn:hover{ color:var(--text); }
+
+  /* ---------- top bar / icon buttons (shared) ---------- */
+  .topbar-main{ padding:var(--sp-5) var(--sp-5) var(--sp-1); }
+  .wordmark{ display:flex; align-items:center; gap:7px; font-family:var(--font-ui); font-weight:800; font-size:15px; letter-spacing:0.18em; color:var(--text); }
+  .wordmark-mark{ width:6px; height:6px; background:var(--accent); border-radius:2px; transform:rotate(45deg); flex-shrink:0; }
+  .home-context{ padding:2px var(--sp-5) var(--sp-4); color:var(--text-2); font-size:13.5px; }
+  .topbar-actions{ display:flex; gap:2px; }
+  .icon-btn{
+    appearance:none; border:none; background:transparent; color:var(--text-2);
+    width:38px; height:38px; border-radius:var(--r-sm); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:background .12s ease, color .12s ease;
+  }
+  .icon-btn:hover{ color:var(--text); background:var(--surface-2); }
+  .icon-btn.active{ color:var(--accent); background:var(--accent-soft); }
+  .icon-text-btn{
+    appearance:none; border:none; background:none; color:var(--text-2); font-size:13.5px; font-weight:700;
+    padding:8px 6px; margin:0 -6px; border-radius:7px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;
+  }
+  .icon-text-btn:hover{ color:var(--text); background:var(--surface-2); }
 
   /* ---------- home ---------- */
-  .routine-list{ display:flex; flex-direction:column; gap:12px; padding:6px 18px 18px; }
-  .routine-card{ display:flex; flex-direction:column; gap:12px; }
-  .routine-card .head{ display:flex; align-items:center; justify-content:flex-start; gap:10px; }
-  .routine-card h3{ font-size:24px; color:var(--chalk); }
-  .routine-card .meta{ color:var(--muted); font-size:13px; font-variant-numeric:tabular-nums; }
-  .routine-card{ border-left:4px solid var(--accent, var(--rest)); }
-  .routine-card .head .dot-accent{ width:9px; height:9px; border-radius:50%; background:var(--accent, var(--rest)); flex-shrink:0; }
-  .routine-card .actions{ display:flex; gap:8px; flex-wrap:wrap; }
-  .routine-card .actions .btn{ flex:1; }
-  .routine-card .util-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  .routine-card .util-row-left{ display:flex; gap:14px; }
-  .util-link{ background:none; border:none; color:var(--muted-2); font-size:12.5px; padding:2px 0; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
-  .util-link:hover{ color:var(--muted); }
-  .util-link.danger{ color:#a85246; }
+  .routine-list{ display:flex; flex-direction:column; padding:0 var(--sp-5); }
+  .routine-unit{ position:relative; padding:var(--sp-5) 0; border-bottom:1px solid var(--border); }
+  .routine-list .routine-unit:last-child{ border-bottom:none; }
+  .routine-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-3); }
+  .routine-name{ font-family:var(--font-ui); font-weight:800; font-size:21px; color:var(--text); line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .routine-meta{ color:var(--text-2); font-size:13px; margin-top:3px; font-variant-numeric:tabular-nums; }
+  .routine-badges{ display:flex; gap:6px; margin-top:9px; flex-wrap:wrap; }
+  .badge{
+    font-size:11px; font-weight:700; padding:3px 9px; border-radius:var(--r-full); background:var(--surface-2); color:var(--text-2);
+    display:inline-flex; align-items:center; gap:4px;
+  }
+  .routine-cta{ margin-top:var(--sp-4); }
+  .btn-start{
+    width:100%; height:54px; border:none; border-radius:var(--r-md); background:var(--accent); color:var(--accent-ink);
+    font-weight:800; font-size:15.5px; letter-spacing:0.01em; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-start:active{ transform:scale(0.98); }
+  .btn-start[disabled]{ opacity:0.35; cursor:not-allowed; }
 
-  .new-routine-bar{ padding:6px 18px 18px; }
+  .menu-backdrop{ position:fixed; inset:0; z-index:29; background:transparent; }
+  .routine-menu{
+    position:absolute; top:42px; right:0; z-index:30; min-width:190px;
+    background:var(--surface-3); border-radius:var(--r-md);
+    padding:6px; display:flex; flex-direction:column; gap:1px;
+    box-shadow:0 16px 36px rgba(0,0,0,0.5);
+  }
+  .routine-menu-item{
+    appearance:none; border:none; background:none; color:var(--text); font-size:13.5px; font-weight:600;
+    padding:10px 10px; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:9px; text-align:left; width:100%;
+  }
+  .routine-menu-item:hover{ background:var(--surface-2); }
+  .routine-menu-item.danger{ color:var(--danger); }
+  .routine-menu-item.danger:hover{ background:var(--danger-soft); }
+  .routine-menu-sep{ height:1px; background:var(--border); margin:4px 4px; }
+
+  .new-routine-bar{ padding:var(--sp-2) var(--sp-5) var(--sp-5); }
+  .add-ghost{
+    appearance:none; width:100%; background:transparent; border:none; border-top:1px solid var(--border); color:var(--text-2);
+    padding:var(--sp-4) 0 2px; font-size:14.5px; font-weight:700; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:8px; transition:color .12s ease;
+  }
+  .add-ghost:hover{ color:var(--accent); }
 
   /* ---------- sync (cloud) ---------- */
-  .sync-box{ margin:0 18px 14px; display:flex; flex-direction:column; gap:10px; }
+  .sync-box{ margin:0 var(--sp-5) var(--sp-4); display:flex; flex-direction:column; gap:10px; }
   .sync-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  .sync-code{ font-family:var(--font-mono); font-size:22px; letter-spacing:0.12em; color:var(--rest); font-weight:700; }
-  .sync-hint{ color:var(--muted-2); font-size:12.5px; line-height:1.4; }
+  .sync-code{ font-family:var(--font-mono); font-size:20px; letter-spacing:0.12em; color:var(--accent); font-weight:700; }
+  .sync-hint{ color:var(--text-3); font-size:12.5px; line-height:1.5; }
   .sync-link-row{ display:flex; gap:8px; }
   .sync-input{
-    flex:1; min-width:0; background:var(--panel-2); border:1px solid var(--line); color:var(--chalk);
-    border-radius:8px; padding:9px 10px; font-family:var(--font-mono); text-transform:uppercase;
-    letter-spacing:0.08em; font-size:14px;
+    flex:1; min-width:0; background:var(--surface-2); border:none; color:var(--text);
+    border-radius:var(--r-sm); padding:10px 10px; font-family:var(--font-mono); text-transform:uppercase;
+    letter-spacing:0.07em; font-size:14px;
   }
-  .sync-input::placeholder{ text-transform:none; letter-spacing:normal; color:var(--muted-2); }
-  .sync-status{ font-size:12px; color:var(--muted-2); min-height:14px; }
-  .sync-status.ok{ color:var(--go); }
-  .sync-status.error{ color:var(--work); }
+  .sync-input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .sync-input::placeholder{ text-transform:none; letter-spacing:normal; color:var(--text-3); }
+  .sync-status{ font-size:12px; color:var(--text-3); min-height:14px; }
+  .sync-status.ok{ color:var(--success); }
+  .sync-status.error{ color:var(--danger); }
 
   /* ---------- editor ---------- */
-  .editor-header{ padding:0 18px 12px; display:flex; flex-direction:column; gap:10px; }
+  .editor-header{ padding:0 var(--sp-5) var(--sp-2); }
   .name-input{
-    background:transparent;
-    border:none;
-    border-bottom:2px solid var(--line);
-    color:var(--chalk);
-    font-family:var(--font-display);
-    font-size:30px;
-    letter-spacing:0.02em;
-    padding:6px 2px;
-    width:100%;
+    background:transparent; border:none; border-bottom:1px solid var(--border); color:var(--text);
+    font-family:var(--font-display); font-size:32px; letter-spacing:0.01em; padding:var(--sp-2) 2px; width:100%;
   }
-  .name-input:focus{ border-bottom-color:var(--rest); }
+  .name-input:focus{ border-bottom-color:var(--accent); }
 
-  .total-bar{
-    position:sticky; top:0; z-index:5;
-    margin:0 18px 14px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:var(--radius-lg);
-    padding:12px 16px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    flex-wrap:wrap;
+  .editor-stat{ display:flex; align-items:baseline; gap:9px; padding:0 var(--sp-5) var(--sp-4); }
+  .editor-stat .total-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-3); font-weight:700; }
+  .editor-stat .total-time{ font-family:var(--font-mono); font-size:26px; color:var(--text); font-weight:700; }
+
+  .config-wrap{ margin:0 var(--sp-5) var(--sp-4); background:var(--surface); border-radius:var(--r-md); }
+  .config-toggle{
+    width:100%; background:none; border:none; display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; color:var(--text); font-weight:700; font-size:14px; cursor:pointer;
   }
-  .total-bar .total-time{ font-family:var(--font-mono); font-size:22px; font-variant-numeric:tabular-nums; color:var(--chalk); }
-  .total-bar .total-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted-2); }
-  .total-bar .goal-row{ display:flex; align-items:center; gap:8px; }
+  .config-toggle .left{ display:flex; align-items:center; gap:9px; }
+  .config-toggle .chev{ color:var(--text-3); transition:transform .15s ease; }
+  .config-toggle.open .chev{ transform:rotate(180deg); }
+  .config-body{ padding:0 16px 16px; display:flex; flex-direction:column; gap:var(--sp-4); border-top:1px solid var(--border); padding-top:14px; margin-top:-2px; }
+  .config-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .config-row .label{ font-size:13px; color:var(--text-2); font-weight:600; }
+  .config-subhead{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-3); font-weight:700; margin-top:2px; }
   .goal-input{
-    width:56px; background:var(--panel-2); border:1px solid var(--line); color:var(--chalk);
-    border-radius:6px; padding:6px 6px; font-family:var(--font-mono); text-align:center; font-size:14px;
+    width:58px; background:var(--surface-2); border:none; color:var(--text);
+    border-radius:var(--r-sm); padding:8px 6px; font-family:var(--font-mono); text-align:center; font-size:14px;
   }
-  .delta-pill{ font-size:12px; padding:4px 9px; border-radius:999px; font-weight:600; font-variant-numeric:tabular-nums; }
-  .delta-ok{ background:var(--go-soft); color:var(--go); }
+  .goal-input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .delta-pill{ font-size:11px; padding:4px 9px; border-radius:var(--r-full); font-weight:700; font-variant-numeric:tabular-nums; }
+  .delta-ok{ background:var(--success-soft); color:var(--success); }
   .delta-mid{ background:var(--warn-soft); color:var(--warn); }
-  .delta-off{ background:var(--work-soft); color:var(--work); }
+  .delta-off{ background:var(--danger-soft); color:var(--danger); }
 
-  .history-box{ margin-top:12px; padding-top:12px; border-top:1px solid var(--line-soft); display:flex; flex-direction:column; gap:10px; }
+  .history-box{ margin-top:var(--sp-4); padding-top:var(--sp-4); border-top:1px solid var(--border); display:flex; flex-direction:column; gap:var(--sp-4); }
   .history-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .history-title{ font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-3); font-weight:700; }
+  .history-stats{ display:flex; gap:10px; }
+  .stat-tile{ flex:1; background:var(--surface); border-radius:var(--r-sm); padding:10px 12px; }
+  .stat-tile .stat-label{ font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); font-weight:700; }
+  .stat-tile .stat-value{ font-family:var(--font-mono); font-size:19px; color:var(--text); font-weight:700; margin-top:2px; }
+  .stat-tile.best .stat-value{ color:var(--accent); }
+  .history-insight{ display:flex; align-items:center; gap:6px; color:var(--accent); font-size:12.5px; font-weight:700; }
   .history-list{ display:flex; flex-direction:column; }
-  .history-row{ display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--muted); padding:6px 0; border-bottom:1px solid var(--line-soft); }
+  .history-row{ display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--text-2); padding:7px 0; border-bottom:1px solid var(--border); }
   .history-row:last-child{ border-bottom:none; }
-  .history-row.best{ color:var(--chalk); font-weight:600; }
+  .history-row.best{ color:var(--text); font-weight:700; }
   .history-left{ display:flex; align-items:center; gap:8px; }
-  .history-date{ color:var(--muted-2); font-variant-numeric:tabular-nums; }
+  .history-date{ color:var(--text-3); font-variant-numeric:tabular-nums; }
   .history-time{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
-  .history-empty{ color:var(--muted-2); font-size:12.5px; line-height:1.4; }
+  .history-empty{ color:var(--text-3); font-size:12.5px; line-height:1.5; }
 
-  .chart-empty{ color:var(--muted-2); font-size:12.5px; line-height:1.4; }
-  .compare-chart{ display:flex; flex-direction:column; gap:8px; padding:10px 0 4px; }
+  .chart-empty{ color:var(--text-3); font-size:12.5px; line-height:1.5; }
+  .compare-chart{ display:flex; flex-direction:column; gap:8px; padding:4px 0; }
   .compare-chart-svg{ width:100%; height:auto; display:block; }
-  .chart-axis{ stroke:var(--line); stroke-width:1; }
-  .chart-axis-label{ fill:var(--muted-2); font-size:9px; font-family:var(--font-mono); }
+  .chart-axis{ stroke:var(--border); stroke-width:1; }
+  .chart-axis-label{ fill:var(--text-3); font-size:9px; font-family:var(--font-mono); }
   .chart-legend{ display:flex; gap:12px; flex-wrap:wrap; }
-  .chart-legend-item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
+  .chart-legend-item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-2); }
   .chart-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-  .chart-hint{ color:var(--muted-2); font-size:11.5px; line-height:1.4; }
+  .chart-hint{ color:var(--text-3); font-size:11.5px; line-height:1.5; }
 
-  .home-nav{ text-align:center; padding:0 18px 14px; }
-  .badge-row{ display:flex; gap:6px; flex-wrap:wrap; }
-  .badge{
-    font-size:11px; padding:3px 9px; border-radius:999px; background:var(--panel-2);
-    border:1px solid var(--line); color:var(--muted);
-  }
-
-  .share-box{ margin:0 18px 14px; display:flex; flex-direction:column; gap:10px; }
   .linked-codes-list{ display:flex; flex-wrap:wrap; gap:8px; }
   .linked-code-chip{
-    display:inline-flex; align-items:center; gap:6px; background:var(--panel-2); border:1px solid var(--line);
-    border-radius:999px; padding:6px 6px 6px 12px; font-size:13px; color:var(--chalk);
-    font-family:var(--font-mono); letter-spacing:0.06em;
+    display:inline-flex; align-items:center; gap:6px; background:var(--surface-2); border:none;
+    border-radius:var(--r-full); padding:6px 6px 6px 12px; font-size:13px; color:var(--text);
+    font-family:var(--font-mono); letter-spacing:0.05em;
   }
   .code-remove{
-    appearance:none; border:none; background:var(--panel-3); color:var(--muted); width:20px; height:20px;
+    appearance:none; border:none; background:var(--surface-3); color:var(--text-2); width:20px; height:20px;
     border-radius:50%; cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center;
   }
-  .code-remove:hover{ color:var(--work); }
-
-  .explore-title{ font-family:var(--font-display); font-size:26px; padding:8px 18px 12px; }
-
-  .steps{ display:flex; flex-direction:column; gap:16px; padding:2px 18px; }
-  .step-card{ display:flex; flex-direction:column; gap:16px; padding:18px; }
-  .step-head{ display:flex; align-items:center; gap:10px; }
-  .step-index{
-    font-family:var(--font-mono); font-size:13px; color:var(--muted-2);
-    width:22px; text-align:center; flex-shrink:0;
+  .code-remove:hover{ color:var(--danger); }
+  .toggle-pill{
+    display:inline-flex; align-items:center; gap:7px; background:var(--surface-2); border:none;
+    border-radius:var(--r-full); padding:8px 14px; font-size:12px; color:var(--text-2); cursor:pointer; align-self:flex-start;
   }
+  .toggle-pill.on{ color:var(--text); }
+
+  .explore-header{ padding:var(--sp-2) var(--sp-5) var(--sp-4); }
+  .explore-title{ font-family:var(--font-display); font-size:26px; letter-spacing:0.01em; color:var(--text); }
+  .explore-sub{ color:var(--text-2); font-size:13.5px; margin-top:2px; }
+  .explore-list{ display:flex; flex-direction:column; padding:0 var(--sp-5); }
+  .explore-unit{ padding:var(--sp-4) 0; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3); }
+  .explore-list .explore-unit:last-child{ border-bottom:none; }
+  .explore-name{ font-size:16px; font-weight:700; color:var(--text); }
+  .explore-meta{ font-size:12.5px; color:var(--text-2); margin-top:2px; }
+
+  .section-label{ padding:var(--sp-2) var(--sp-5) var(--sp-1); font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-3); font-weight:700; }
+
+  .steps{ display:flex; flex-direction:column; padding:0 var(--sp-5); }
+  .step-row{ border-bottom:1px solid var(--border); }
+  .steps .step-row:last-child{ border-bottom:none; }
+  .step-row.expanded{ background:var(--surface); border-radius:var(--r-md); border-bottom:none; margin:8px 0; padding:14px; }
+
+  .step-summary-row{
+    width:100%; background:none; border:none; display:flex; align-items:center; gap:12px;
+    padding:14px 2px; cursor:pointer; text-align:left; min-height:44px;
+  }
+  .step-num{
+    width:28px; height:28px; border-radius:50%; background:var(--surface-2); color:var(--text-2);
+    font-family:var(--font-mono); font-size:12.5px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .step-num-btn{ appearance:none; border:none; cursor:pointer; }
+  .step-summary-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .step-summary-name{ font-size:15px; font-weight:700; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .step-summary-meta{ font-size:12.5px; color:var(--text-2); font-family:var(--font-mono); }
+  .step-chevron{ color:var(--text-3); flex-shrink:0; }
+  .step-summary-row:hover .step-chevron{ color:var(--text-2); }
+
+  .step-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
   .step-name{
-    flex:1; min-width:0; background:var(--panel-2); border:1px solid var(--line); color:var(--chalk);
-    border-radius:8px; padding:10px 12px; font-size:15px; font-weight:600;
+    flex:1; min-width:0; background:var(--surface-2); border:none; color:var(--text);
+    border-radius:var(--r-sm); padding:10px 12px; font-size:14.5px; font-weight:700;
   }
-  .step-name::placeholder{ color:var(--muted-2); font-weight:400; }
+  .step-name:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .step-name::placeholder{ color:var(--text-3); font-weight:400; }
   .step-menu{ display:flex; gap:4px; flex-shrink:0; }
 
-  .seg-toggle{ display:flex; background:var(--panel-2); border:1px solid var(--line); border-radius:999px; padding:3px; gap:2px; }
+  .seg-toggle{ display:flex; background:var(--surface-2); border-radius:var(--r-full); padding:3px; gap:2px; margin-bottom:12px; }
   .seg-toggle button{
-    appearance:none; border:none; background:transparent; color:var(--muted);
-    font-size:12.5px; font-weight:600; padding:7px 12px; border-radius:999px; cursor:pointer;
+    appearance:none; border:none; background:transparent; color:var(--text-2);
+    font-size:12px; font-weight:700; padding:8px 12px; border-radius:var(--r-full); cursor:pointer;
     text-transform:uppercase; letter-spacing:0.04em; flex:1;
   }
-  .seg-toggle button.active.type-time{ background:var(--work); color:#1a0700; }
-  .seg-toggle button.active.type-reps{ background:var(--rest); color:#0a1414; }
+  .seg-toggle button.active{ background:var(--accent); color:var(--accent-ink); }
 
   .step-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .metric-box{
-    grid-column:span 1; background:var(--panel-2); border:1px solid var(--line-soft);
-    border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;
+    grid-column:span 1; background:var(--surface-2); border-radius:var(--r-sm);
+    padding:12px 14px; display:flex; flex-direction:column; gap:8px;
   }
   .metric-box-wide{ grid-column:1 / -1; }
-  .metric-box-secondary{ background:transparent; border-style:dashed; }
-  .metric-box-secondary .metric-input-row input{ font-size:17px; }
-  .metric-box label{
-    font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; color:var(--muted-2);
-  }
+  .metric-box-secondary{ background:transparent; border:1px dashed var(--border-strong); }
+  .metric-box-secondary .metric-input-row input{ font-size:16px; }
+  .metric-box label{ font-size:10px; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; color:var(--text-3); }
   .metric-input-row{ display:flex; align-items:baseline; gap:6px; }
   .metric-box input[type=number]{
-    background:transparent; border:none; padding:0; color:var(--chalk);
-    font-family:var(--font-mono); font-size:24px; font-weight:700; width:100%; min-width:0;
+    background:transparent; border:none; padding:0; color:var(--text);
+    font-family:var(--font-mono); font-size:22px; font-weight:700; width:100%; min-width:0;
   }
-  .metric-unit{ color:var(--muted-2); font-size:12.5px; font-family:var(--font-mono); flex-shrink:0; }
+  .metric-unit{ color:var(--text-3); font-size:12px; font-family:var(--font-mono); flex-shrink:0; }
 
   .chips{ display:flex; gap:6px; flex-wrap:wrap; }
   .chip{
-    appearance:none; border:1px solid var(--line); background:transparent; color:var(--muted);
-    font-family:var(--font-mono); font-size:12px; padding:5px 9px; border-radius:7px; cursor:pointer;
+    appearance:none; border:none; background:var(--surface-3); color:var(--text-2);
+    font-family:var(--font-mono); font-size:11.5px; padding:6px 10px; border-radius:var(--r-sm); cursor:pointer;
   }
-  .chip:hover{ border-color:var(--muted-2); color:var(--chalk); }
-  .chip.active{ background:var(--panel-3); color:var(--chalk); border-color:var(--muted-2); }
+  .chip:hover{ color:var(--text); }
+  .chip.active{ background:var(--accent-soft); color:var(--accent); }
 
   .tool-btn{
-    appearance:none; border:1px solid var(--line); background:transparent; color:var(--muted);
-    width:30px; height:30px; border-radius:8px; cursor:pointer; font-size:13px;
+    appearance:none; border:none; background:var(--surface-2); color:var(--text-2);
+    width:30px; height:30px; border-radius:var(--r-sm); cursor:pointer; font-size:13px;
     display:flex; align-items:center; justify-content:center;
   }
-  .tool-btn:hover{ color:var(--chalk); border-color:var(--muted-2); }
-  .tool-btn.remove:hover{ color:var(--work); border-color:var(--work-soft); }
+  .tool-btn:hover{ color:var(--text); }
+  .tool-btn.remove:hover{ color:var(--danger); }
   .tool-btn[disabled]{ opacity:0.3; cursor:not-allowed; }
 
-  .add-step-bar{ padding:14px 18px 6px; }
-  .editor-footer{ padding:18px 18px 6px; display:flex; gap:10px; }
+  .add-step-bar{ padding:var(--sp-2) var(--sp-5) var(--sp-1); }
+  .editor-footer{ padding:var(--sp-5); }
 
   /* ---------- player ---------- */
   .player{ flex:1; display:flex; flex-direction:column; }
-  .player-header{
-    background:var(--panel);
-    border-bottom:1px solid var(--line);
-    padding:16px 18px 14px;
-    text-align:center;
+  .player-header{ padding:var(--sp-4) var(--sp-5) var(--sp-3); }
+  .player-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:0 0 10px; }
+  .player-exit{
+    background:none; border:none; color:var(--text-2); font-size:13px; font-weight:700; cursor:pointer;
+    padding:8px; margin:-8px; flex-shrink:0; display:inline-flex; align-items:center; gap:3px; border-radius:var(--r-sm);
   }
-  .player-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:0 0 12px; }
-  .player-exit{ background:none; border:none; color:var(--muted-2); font-size:13px; cursor:pointer; padding:6px; flex-shrink:0; }
+  .player-exit:hover{ color:var(--text); background:var(--surface-2); }
   .player-title{
-    flex:1; text-align:right; font-family:var(--font-display);
-    font-size:19px; letter-spacing:0.04em; text-transform:uppercase;
-    color:var(--accent, var(--chalk));
+    font-size:12.5px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-2);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;
   }
   .player-total{
-    display:inline-block; margin-top:10px;
-    font-family:var(--font-mono); color:var(--chalk); font-size:12.5px; font-variant-numeric:tabular-nums;
-    background:var(--panel-2); border:1px solid var(--line); padding:5px 10px; border-radius:999px;
+    display:block; text-align:center; margin-top:2px;
+    font-family:var(--font-mono); color:var(--text-2); font-size:12px; font-variant-numeric:tabular-nums;
   }
 
-  .progress-track{ height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden; }
-  .progress-fill{ height:100%; background:var(--accent, var(--rest)); border-radius:999px; transition:width .3s linear; }
+  .step-dots{ display:flex; align-items:center; gap:3px; margin-bottom:8px; }
+  .step-dot{ flex:1; height:3px; min-width:2px; border-radius:var(--r-full); background:var(--surface-2); }
+  .step-dot.done{ background:var(--text-3); }
+  .step-dot.active{ background:var(--accent); }
 
   .hero{
     flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:18px; padding:20px 24px; text-align:center;
+    gap:20px; padding:var(--sp-5); text-align:center;
   }
   .phase-pill{
-    font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.14em;
-    padding:7px 18px; border-radius:999px;
+    font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.14em;
+    padding:7px 16px; border-radius:var(--r-full); display:inline-flex; align-items:center; gap:6px;
   }
   .phase-pill.work{ background:var(--work-soft); color:var(--work); }
   .phase-pill.rest{ background:var(--rest-soft); color:var(--rest); }
-  .phase-pill.done{ background:var(--go-soft); color:var(--go); }
+  .phase-pill.done{ background:var(--success-soft); color:var(--success); }
 
-  .exercise-name{ font-size:clamp(30px,9vw,46px); color:var(--chalk); }
+  .exercise-name{ font-family:var(--font-display); letter-spacing:0.01em; font-size:clamp(28px,8vw,40px); color:var(--text); max-width:22ch; }
+
+  .timer-ring-wrap{ position:relative; width:min(280px,72vw); aspect-ratio:1; display:flex; align-items:center; justify-content:center; }
+  .timer-ring{ position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); }
+  .timer-ring-track{ fill:none; stroke:var(--surface-2); stroke-width:6; }
+  .timer-ring-fill{ fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset 1s linear; }
+  .timer-ring-fill.work{ stroke:var(--work); }
+  .timer-ring-fill.rest{ stroke:var(--rest); }
 
   .timer-digits{
-    font-family:var(--font-mono); font-weight:700; font-variant-numeric:tabular-nums;
-    font-size:clamp(64px,26vw,120px); line-height:1; letter-spacing:-0.01em;
+    position:relative; font-family:var(--font-mono); font-weight:700; font-variant-numeric:tabular-nums;
+    font-size:clamp(42px,13vw,64px); line-height:1; letter-spacing:-0.01em;
   }
   .timer-digits.work{ color:var(--work); }
   .timer-digits.rest{ color:var(--rest); }
 
-  .ring-track{ width:min(220px,60vw); height:6px; background:var(--panel-2); border-radius:999px; overflow:hidden; }
-  .ring-fill{ height:100%; border-radius:999px; transition:width 1s linear; }
-  .ring-fill.work{ background:var(--work); }
-  .ring-fill.rest{ background:var(--rest); }
-
   .reps-block{ display:flex; flex-direction:column; align-items:center; gap:6px; }
-  .reps-number{ font-family:var(--font-mono); font-weight:700; font-size:clamp(56px,20vw,88px); color:var(--chalk); }
-  .reps-label{ color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:0.1em; }
-  .reps-stopwatch{ font-family:var(--font-mono); color:var(--muted-2); font-size:15px; margin-top:4px; }
-  .reps-hint{ color:var(--muted-2); font-size:13px; margin-top:6px; }
+  .reps-number{ font-family:var(--font-mono); font-weight:800; font-size:clamp(64px,20vw,96px); color:var(--text); line-height:1; }
+  .reps-label{ color:var(--text-2); font-size:12.5px; text-transform:uppercase; letter-spacing:0.12em; font-weight:700; }
+  .reps-stopwatch{ font-family:var(--font-mono); color:var(--text-3); font-size:14px; margin-top:6px; }
+  .reps-hint{ color:var(--text-3); font-size:12.5px; margin-top:4px; }
 
   .next-up{
     display:flex; flex-direction:column; align-items:center; gap:2px;
-    background:var(--rest-soft); border:1px solid var(--rest);
-    border-radius:14px; padding:10px 22px; max-width:100%;
+    background:var(--surface); border-radius:var(--r-md); padding:10px 22px; max-width:100%;
   }
-  .next-up-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.14em; color:var(--rest); font-weight:700; }
-  .next-up-name{ font-size:18px; color:var(--chalk); font-weight:700; text-wrap:balance; text-align:center; }
+  .next-up-label{ font-size:10px; text-transform:uppercase; letter-spacing:0.14em; color:var(--text-3); font-weight:700; }
+  .next-up-name{ font-size:16px; color:var(--text-2); font-weight:700; text-wrap:balance; text-align:center; }
 
-  .controls{ padding:10px 18px 6px; display:flex; flex-direction:column; gap:12px; }
-  .transport{ display:flex; align-items:center; justify-content:center; gap:16px; }
-  .transport .btn-icon{ font-size:18px; }
+  .controls{ padding:var(--sp-3) var(--sp-5) var(--sp-3); display:flex; flex-direction:column; gap:14px; }
   .done-btn-wrap{ padding:0 2px; }
+  .done-btn-wrap .btn-go{ width:100%; height:64px; border-radius:var(--r-md); font-size:17px; }
 
-  .util-controls{ display:flex; align-items:center; justify-content:center; gap:10px; padding:4px 0; flex-wrap:wrap; }
-  .toggle-pill{
-    display:flex; align-items:center; gap:7px; background:var(--panel-2); border:1px solid var(--line);
-    border-radius:999px; padding:7px 13px; font-size:12.5px; color:var(--muted); cursor:pointer;
+  .transport{ display:flex; align-items:center; justify-content:center; gap:20px; }
+  .transport-side{
+    appearance:none; background:none; border:none; color:var(--text-3); width:38px; height:38px;
+    border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;
   }
-  .toggle-pill.on{ color:var(--chalk); border-color:var(--muted-2); }
-  .toggle-pill.listening{ color:var(--rest); border-color:var(--rest); }
-  .toggle-pill.error{ color:var(--muted-2); opacity:0.6; cursor:not-allowed; }
-  .dot{ width:7px; height:7px; border-radius:50%; background:var(--muted-2); }
-  .dot.on{ background:var(--go); box-shadow:0 0 0 3px var(--go-soft); }
-  .dot.listening{ background:var(--rest); animation:pulse-dot 1.2s ease-in-out infinite; }
+  .transport-side:hover{ color:var(--text-2); background:var(--surface); }
+  .transport-side[disabled]{ opacity:0.3; cursor:not-allowed; }
+  .transport-main{
+    appearance:none; border:none; min-width:160px; height:52px; border-radius:var(--r-full);
+    font-size:15px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+  }
+  .transport-main.primary{ background:var(--accent); color:var(--accent-ink); }
+  .transport-main.secondary{ background:var(--surface); color:var(--text); }
 
-  .voice-wave{ display:inline-flex; align-items:flex-end; gap:2px; height:12px; }
-  .voice-wave i{ width:2.5px; background:var(--rest); border-radius:1px; display:block; animation:wave-bar 0.9s ease-in-out infinite; }
-  .voice-wave i:nth-child(1){ animation-delay:0s; }
-  .voice-wave i:nth-child(2){ animation-delay:0.15s; }
-  .voice-wave i:nth-child(3){ animation-delay:0.3s; }
-  .voice-wave i:nth-child(4){ animation-delay:0.45s; }
-  @keyframes wave-bar{ 0%,100%{ height:3px; } 50%{ height:12px; } }
+  .audio-trigger-row{ display:flex; justify-content:center; }
+  .audio-trigger{
+    display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--text-3);
+    font-size:12px; font-weight:700; padding:8px 10px; cursor:pointer; border-radius:var(--r-sm);
+  }
+  .audio-trigger:hover, .audio-trigger.open{ color:var(--text-2); }
+  .audio-panel{ background:var(--surface); border-radius:var(--r-md); padding:8px; display:flex; flex-direction:column; gap:2px; }
+  .audio-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 8px; border-radius:var(--r-sm); }
+  .audio-row .left{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-2); }
+  .audio-row.active .left{ color:var(--text); }
+  .audio-switch{
+    appearance:none; width:36px; height:20px; border-radius:999px; background:var(--surface-3);
+    position:relative; flex-shrink:0; border:none; cursor:pointer;
+  }
+  .audio-switch::after{
+    content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%;
+    background:var(--text-2); transition:transform .15s ease, background .15s ease;
+  }
+  .audio-switch.on{ background:var(--accent-soft); }
+  .audio-switch.on::after{ transform:translateX(16px); background:var(--accent); }
+  .audio-switch.listening::after{ background:var(--accent); animation:pulse-dot 1.2s ease-in-out infinite; }
+  .audio-switch[disabled]{ opacity:0.4; cursor:not-allowed; }
+  .audio-error-text{ font-size:11.5px; color:var(--danger); padding:2px 8px 4px; }
+  .audio-hint{ font-size:11px; color:var(--text-3); padding:6px 8px 2px; line-height:1.5; }
 
   @keyframes digit-tick{ 0%{ transform:scale(1); } 40%{ transform:scale(1.045); } 100%{ transform:scale(1); } }
+  @keyframes pulse-dot{ 0%,100%{ box-shadow:0 0 0 0 var(--accent-soft);} 50%{ box-shadow:0 0 0 6px var(--accent-soft);} }
 
-  .voice-note{ text-align:center; font-size:11.5px; color:var(--muted-2); padding:0 30px; }
-
-  .end-link{ text-align:center; padding:10px 0 2px; }
-  .end-link button{ background:none; border:none; color:var(--muted-2); font-size:13px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+  .end-link{ text-align:center; padding:6px 0 0; }
+  .end-link button{ background:none; border:none; color:var(--text-3); font-size:12px; cursor:pointer; padding:8px; }
+  .end-link button:hover{ color:var(--text-2); }
 
   /* summary */
-  .summary{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; text-align:center; }
-  .summary .big-check{ font-family:var(--font-display); font-size:40px; color:var(--go); }
-  .summary .sub{ color:var(--muted); font-size:15px; }
-  .summary .stat{ font-family:var(--font-mono); font-size:40px; color:var(--chalk); }
-  .summary .actions{ display:flex; gap:10px; margin-top:10px; width:100%; max-width:320px; }
-  .summary .actions .btn{ flex:1; }
+  .summary{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:var(--sp-6) var(--sp-5); text-align:center; }
+  .summary-check{
+    width:64px; height:64px; border-radius:50%; border:2px solid var(--success); color:var(--success);
+    display:flex; align-items:center; justify-content:center; animation:summary-pop .5s ease-out;
+  }
+  .summary-title{ font-family:var(--font-display); font-size:30px; letter-spacing:0.01em; color:var(--text); max-width:300px; }
+  .summary-sub{ color:var(--text-2); font-size:14px; }
+  .summary-stat{ font-family:var(--font-mono); font-size:44px; font-weight:800; color:var(--text); animation:summary-pop .5s ease-out .05s both; }
+  .summary-highlight{ color:var(--accent); display:flex; align-items:center; justify-content:center; gap:6px; font-weight:700; font-size:13.5px; }
+  .summary-note{ color:var(--text-2); font-size:13.5px; }
+  .summary-actions{ display:flex; gap:10px; margin-top:var(--sp-3); width:100%; max-width:320px; }
+  .summary-actions .btn{ flex:1; }
+  @keyframes summary-pop{ 0%{ opacity:0; transform:scale(0.85); } 100%{ opacity:1; transform:scale(1); } }
 
   /* flash overlay */
   .flash-overlay{
@@ -466,25 +515,24 @@
   .flash-overlay.flash-work{ background:var(--work); }
   .flash-overlay.flash-rest{ background:var(--rest); }
   .flash-overlay .flash-word{
-    font-family:var(--font-display); font-size:15vw; color:rgba(10,10,10,0.85);
+    font-family:var(--font-display); font-size:15vw; color:rgba(6,8,11,0.85);
     opacity:0; letter-spacing:0.03em;
   }
   .flash-overlay.flashing .flash-word{ animation:word-anim 0.9s ease-out; }
 
-  @keyframes flash-anim{ 0%{opacity:0.85;} 100%{opacity:0;} }
+  @keyframes flash-anim{ 0%{opacity:0.7;} 100%{opacity:0;} }
   @keyframes word-anim{ 0%{opacity:0; transform:scale(0.85);} 25%{opacity:1; transform:scale(1);} 100%{opacity:0; transform:scale(1.05);} }
-  @keyframes pulse-dot{ 0%,100%{ box-shadow:0 0 0 0 var(--rest-soft);} 50%{ box-shadow:0 0 0 6px var(--rest-soft);} }
 
   @media (prefers-reduced-motion: reduce){
-    .flash-overlay.flashing, .flash-overlay.flashing .flash-word, .dot.listening, .voice-wave i, .timer-digits{ animation:none !important; }
+    .flash-overlay.flashing, .flash-overlay.flashing .flash-word, .audio-switch.listening::after, .timer-digits, .summary-check, .summary-stat{ animation:none !important; }
   }
 
-  .help{ margin:0 18px 14px; }
-  .help summary{ cursor:pointer; color:var(--muted-2); font-size:12.5px; list-style:none; }
+  .help{ margin:var(--sp-4) var(--sp-5) 0; }
+  .help summary{ cursor:pointer; color:var(--text-3); font-size:12.5px; list-style:none; }
   .help summary::-webkit-details-marker{ display:none; }
-  .help summary:before{ content:"?  "; color:var(--muted-2); }
+  .help summary:before{ content:"?  "; color:var(--text-3); }
   .help[open] summary{ margin-bottom:8px; }
-  .help p{ color:var(--muted); font-size:13px; line-height:1.5; margin-bottom:8px; }
+  .help p{ color:var(--text-2); font-size:13px; line-height:1.55; margin-bottom:8px; }
 </style>
 </head>
 <body>
@@ -930,16 +978,51 @@
     });
   }
 
-  /* each saved routine gets a stable accent color from this palette, cycling by
-     position in the list — a quick visual way to tell routines apart at a glance */
-  var ROUTINE_ACCENTS = ["#ff5a36","#33c7c1","#ffcf5c","#8bd450","#5ccfe6","#ff8a5c"];
-  function routineAccent(index){ return ROUTINE_ACCENTS[index % ROUTINE_ACCENTS.length]; }
+  /* ============ icon system ============
+     One small inline-SVG icon set used everywhere instead of emoji, so every
+     glyph in the app shares the same stroke weight, size and color logic. */
+  var ICON_PATHS = {
+    plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+    x: '<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>',
+    "chevron-left": '<polyline points="15 6 9 12 15 18"/>',
+    "chevron-right": '<polyline points="9 6 15 12 9 18"/>',
+    "chevron-up": '<polyline points="6 15 12 9 18 15"/>',
+    "chevron-down": '<polyline points="6 9 12 15 18 9"/>',
+    play: '<polygon points="7 4 19 12 7 20" fill="currentColor" stroke="none"/>',
+    pause: '<rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/>',
+    check: '<polyline points="5 13 10 18 19 7"/>',
+    copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><rect x="4" y="4" width="11" height="11" rx="2"/>',
+    "more-vertical": '<circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/>',
+    "bar-chart": '<line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="8"/><line x1="18" y1="20" x2="18" y2="11"/>',
+    home: '<polyline points="4 11 12 4 20 11"/><rect x="6" y="11" width="12" height="9"/><rect x="10" y="15" width="4" height="5"/>',
+    globe: '<circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="3.2" ry="8"/><line x1="4" y1="12" x2="20" y2="12"/>',
+    link: '<circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><line x1="8.4" y1="10.6" x2="15.6" y2="6.4"/><line x1="8.4" y1="13.4" x2="15.6" y2="17.6"/>',
+    lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 118 0v3"/>',
+    mic: '<rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10v1a7 7 0 0014 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>',
+    bell: '<path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>',
+    volume: '<polygon points="4 9 8 9 12 5 12 19 8 15 4 15"/><path d="M16 8a5 5 0 010 8"/>',
+    trash: '<rect x="6" y="7" width="12" height="13" rx="1"/><line x1="4" y1="7" x2="20" y2="7"/><path d="M9 7V4h6v3"/>',
+    pencil: '<path d="M4 20h4l10-10-4-4L4 16v4z"/><line x1="13" y1="7" x2="17" y2="11"/>',
+    trophy: '<path d="M6 4h12v4a6 6 0 01-12 0V4z"/><path d="M6 5H3v1a4 4 0 004 4"/><path d="M18 5h3v1a4 4 0 01-4 4"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="8" y1="20" x2="16" y2="20"/>',
+    sliders: '<line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/>',
+    "trending-up": '<polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/>'
+  };
+  function icon(name, size){
+    var s = size || 16;
+    var filled = (name === "play" || name === "pause" || name === "more-vertical");
+    return '<svg class="icon" viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="currentColor" stroke-width="'+(filled?1.8:2)+'" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICON_PATHS[name]||"")+'</svg>';
+  }
 
   /* ============ view / routing ============ */
   var view = "home";          // 'home' | 'editor' | 'player' | 'explore'
   var editingId = null;
   var expandedHistoryId = null; // which routine's history box is open on the home screen
   var showChartForId = null;    // which routine's chart (progress or shared comparison) is open
+  var openMenuId = null;        // which routine's overflow menu (editar/duplicar/eliminar) is open
+  var syncPanelOpen = false;    // whether the sync-code drawer is expanded on the home screen
+  var configPanelOpen = false;  // whether the "Configuración" panel is expanded in the editor
+  var audioPanelOpen = false;   // whether the audio (voz/sonido/aviso) panel is expanded in the player
+  var collapsedSteps = {};      // stepId -> false once the user (or add/duplicate-step) opens it; collapsed by default
   var sharedEntriesCache = {};  // shareId -> { linkedCodes:[...], entries:[...] } pulled from Firestore
   var publicRoutinesList = null; // cache for "Todo el mundo": null = not loaded, "loading", or an array
   var app = document.getElementById("app");
@@ -1175,7 +1258,6 @@
   /* ============ player state machine ============ */
   var player = {
     routine: null,
-    accent: null,       // same accent color as this routine's card on the home screen
     queue: [],
     index: -1,
     phase: "idle",      // idle | running | paused | done
@@ -1231,7 +1313,6 @@
     ensureAudio();
     setupRecognition();
     player.routine = routine;
-    player.accent = routineAccent(Math.max(0, state.routines.indexOf(routine)));
     player.queue = buildQueue(routine);
     player.index = -1;
     player.totalPlanned = routineTotalSeconds(routine);
@@ -1380,7 +1461,8 @@
     var ring = document.getElementById("ringFill");
     if(ring && item){
       var pct = item.seconds > 0 ? Math.max(0, Math.min(100, (remaining/item.seconds)*100)) : 0;
-      ring.style.width = pct + "%";
+      var CIRC = 339.3;
+      ring.style.strokeDashoffset = CIRC * (1 - pct/100);
     }
   }
   function updateRepsStopwatchDom(elapsed){
@@ -1390,10 +1472,6 @@
   function updateTotalElapsedDom(){
     var el = document.getElementById("totalElapsed");
     if(el) el.textContent = fmtTime(player.totalElapsed) + " / " + fmtTime(player.totalPlanned);
-    var track = document.getElementById("overallFill");
-    if(track && player.totalPlanned>0){
-      track.style.width = Math.min(100,(player.totalElapsed/player.totalPlanned)*100) + "%";
-    }
   }
   function renderPlayerLive(){
     // re-render only the parts that depend on toggles (voice/sound) without disturbing timer
@@ -1414,6 +1492,7 @@
       persist();
       go("editor", { editingId:r.id });
     }else if(action === "edit-routine"){
+      openMenuId = null;
       go("editor", { editingId:id });
       var routineBeingEdited = findRoutine(id);
       if(routineBeingEdited && routineBeingEdited.shareId) checkSharedRoutines();
@@ -1433,19 +1512,41 @@
         copy.steps.forEach(function(s){ s.id = uid(); });
         state.routines.push(copy);
         persist();
+        openMenuId = null;
         render();
       }
     }else if(action === "delete-routine"){
       if(window.confirm("¿Eliminar esta rutina? No se puede deshacer.")){
         state.routines = state.routines.filter(function(r){ return r.id !== id; });
         persist();
+        openMenuId = null;
         render();
       }
+    }else if(action === "toggle-routine-menu"){
+      openMenuId = openMenuId === id ? null : id;
+      render();
+    }else if(action === "close-menu"){
+      openMenuId = null;
+      render();
+    }else if(action === "toggle-sync-panel"){
+      syncPanelOpen = !syncPanelOpen;
+      render();
+    }else if(action === "toggle-config-panel"){
+      configPanelOpen = !configPanelOpen;
+      render();
+    }else if(action === "toggle-audio-panel"){
+      audioPanelOpen = !audioPanelOpen;
+      render();
     }else if(action === "back-home"){
       go("home");
     }else if(action === "add-step"){
       var routine = findRoutine(editingId);
-      if(routine){ routine.steps.push(defaultStep({})); persist(); render(); }
+      if(routine){
+        var newStep = defaultStep({});
+        collapsedSteps[newStep.id] = false; // open it immediately so it's ready to fill in
+        routine.steps.push(newStep);
+        persist(); render();
+      }
     }else if(action === "remove-step"){
       var routine2 = findRoutine(editingId);
       if(routine2){ routine2.steps = routine2.steps.filter(function(s){ return s.id !== stepId; }); persist(); render(); }
@@ -1456,10 +1557,15 @@
         if(idx > -1){
           var copyStep = JSON.parse(JSON.stringify(routine3.steps[idx]));
           copyStep.id = uid();
+          collapsedSteps[copyStep.id] = false; // open the duplicate so it's easy to tweak right away
           routine3.steps.splice(idx+1,0,copyStep);
           persist(); render();
         }
       }
+    }else if(action === "toggle-step"){
+      var stepWasCollapsed = collapsedSteps[stepId] !== false; // collapsed by default
+      collapsedSteps[stepId] = !stepWasCollapsed;
+      render();
     }else if(action === "move-step"){
       var dir = t.getAttribute("data-dir");
       var routine4 = findRoutine(editingId);
@@ -1540,6 +1646,7 @@
       linkSyncCode(codeInput ? codeInput.value : "");
     }else if(action === "toggle-history"){
       expandedHistoryId = expandedHistoryId === id ? null : id;
+      openMenuId = null;
       render();
     }
   });
@@ -1628,6 +1735,7 @@
     else if(view === "editor") html = renderEditor();
     else if(view === "player") html = renderPlayer();
     else if(view === "explore") html = renderExplore();
+    app.setAttribute("data-view", view);
     app.innerHTML = html;
     if(view === "home") setSyncStatus(syncStatus);
   }
@@ -1635,49 +1743,71 @@
   function renderHome(){
     var html = "";
     html += '<div class="screen">';
-    html += '<div class="topbar topbar-home"><div class="brand"><span class="mark">MARCADOR</span><span class="tag">tu ritmo de gimnasio</span></div></div>';
-    html += '<div class="home-nav"><button class="util-link" data-action="open-explore">🌍 Explorar rutinas públicas</button></div>';
+
+    html += '<div class="topbar topbar-main">';
+    html += '<span class="wordmark">MARCADOR<span class="wordmark-mark"></span></span>';
+    html += '<div class="topbar-actions">';
+    html += '<button class="icon-btn" data-action="open-explore" title="Descubrir rutinas">'+icon("globe",18)+'</button>';
+    html += '<button class="icon-btn'+(syncPanelOpen?' active':'')+'" data-action="toggle-sync-panel" title="Sincronización">'+icon("link",18)+'</button>';
+    html += '</div>';
+    html += '</div>';
+
+    if(state.routines.length){
+      html += '<div class="home-context">Listo para entrenar.</div>';
+    }
+
+    if(syncPanelOpen){
+      html += '<div class="card sync-box">';
+      html += '<div class="sync-row"><div><div class="total-label">Tu código de sincronización</div><div class="sync-code">'+escapeHtml(syncCode||"—")+'</div></div><button class="btn btn-ghost btn-sm" data-action="copy-sync-code">Copiar</button></div>';
+      html += '<div class="sync-hint">Apunta este código y guárdalo. Introdúcelo en otro dispositivo (móvil, tablet, ordenador) para traerte aquí las mismas rutinas.</div>';
+      html += '<div class="sync-link-row"><input class="sync-input" id="syncCodeInput" maxlength="10" placeholder="Código de otro dispositivo"><button class="btn btn-primary btn-sm" data-action="link-sync-code">Vincular</button></div>';
+      html += '<div class="sync-status" id="syncStatusText"></div>';
+      html += '</div>';
+    }
 
     if(!state.routines.length){
-      html += '<div class="empty"><span class="mark-big">Aún no hay rutinas</span>Crea tu primera rutina y Marcador irá marcando cada ejercicio y descanso por ti.</div>';
+      html += '<div class="empty-state">';
+      html += '<div class="empty-state-title">Tu primer entrenamiento empieza aquí.</div>';
+      html += '<div class="empty-state-sub">Crea una rutina y Marcador se encarga de avisarte cuándo tocar cada ejercicio, cada descanso y cada serie.</div>';
+      html += '<div class="empty-state-actions">';
+      html += '<button class="btn btn-primary btn-lg" data-action="new-routine">'+icon("plus",16)+' Crear rutina</button>';
+      html += '<button class="link-btn" data-action="open-explore">Explorar rutinas</button>';
+      html += '</div></div>';
     }else{
       html += '<div class="routine-list">';
-      state.routines.forEach(function(r, ri){
+      state.routines.forEach(function(r){
         var total = routineTotalSeconds(r);
-        var accent = routineAccent(ri);
-        html += '<div class="card routine-card" style="--accent:'+accent+'">';
-        html += '<div class="head"><span class="dot-accent"></span><h3>'+escapeHtml(r.name||"Sin nombre")+'</h3></div>';
+        var menuOpen = openMenuId === r.id;
+        html += '<div class="routine-unit">';
+        html += '<div class="routine-top">';
+        html += '<div class="routine-name">'+escapeHtml(r.name||"Sin nombre")+'</div>';
+        html += '<button class="icon-btn" data-action="toggle-routine-menu" data-id="'+r.id+'" title="Más opciones">'+icon("more-vertical",18)+'</button>';
+        html += '</div>';
         var roundsN = Math.max(1, Number(r.rounds)||1);
-        html += '<div class="meta">'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+(roundsN>1?' · '+roundsN+' vueltas':'')+' · '+fmtTime(total)+' total'+(r.targetMinutes?' · objetivo '+r.targetMinutes+' min':'')+'</div>';
+        html += '<div class="routine-meta">'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+(roundsN>1?' · '+roundsN+' vueltas':'')+' · '+fmtTime(total)+(r.targetMinutes?' · meta '+r.targetMinutes+' min':'')+'</div>';
         var badges = "";
-        if(r.isPublic) badges += '<span class="badge">🌍 Pública</span>';
-        if(r.linkedCodes && r.linkedCodes.length) badges += '<span class="badge">🔗 Compartida ('+(r.linkedCodes.length+1)+')</span>';
-        if(badges) html += '<div class="badge-row">'+badges+'</div>';
-        html += '<div class="actions">';
-        html += '<button class="btn btn-primary btn-lg" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+'>▶ Empezar</button>';
-        html += '</div>';
-        html += '<div class="util-row">';
-        html += '<div class="util-row-left">';
-        html += '<button class="util-link" data-action="edit-routine" data-id="'+r.id+'">Editar</button>';
-        html += '<button class="util-link" data-action="duplicate-routine" data-id="'+r.id+'">Duplicar</button>';
-        html += '<button class="util-link danger" data-action="delete-routine" data-id="'+r.id+'">Eliminar</button>';
-        html += '</div>';
-        html += '<button class="util-link" data-action="toggle-history" data-id="'+r.id+'">Historial</button>';
-        html += '</div>';
+        if(r.isPublic) badges += '<span class="badge">'+icon("globe",11)+' Pública</span>';
+        if(r.linkedCodes && r.linkedCodes.length) badges += '<span class="badge">'+icon("link",11)+' Compartida ('+(r.linkedCodes.length+1)+')</span>';
+        if(badges) html += '<div class="routine-badges">'+badges+'</div>';
+        html += '<div class="routine-cta"><button class="btn-start" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+'>'+icon("play",16)+' Empezar</button></div>';
+
+        if(menuOpen){
+          html += '<div class="menu-backdrop" data-action="close-menu"></div>';
+          html += '<div class="routine-menu">';
+          html += '<button class="routine-menu-item" data-action="edit-routine" data-id="'+r.id+'">'+icon("pencil",15)+' Editar</button>';
+          html += '<button class="routine-menu-item" data-action="duplicate-routine" data-id="'+r.id+'">'+icon("copy",15)+' Duplicar</button>';
+          html += '<button class="routine-menu-item" data-action="toggle-history" data-id="'+r.id+'">'+icon("bar-chart",15)+' '+(expandedHistoryId===r.id?'Ocultar historial':'Ver historial')+'</button>';
+          html += '<div class="routine-menu-sep"></div>';
+          html += '<button class="routine-menu-item danger" data-action="delete-routine" data-id="'+r.id+'">'+icon("trash",15)+' Eliminar</button>';
+          html += '</div>';
+        }
+
         if(expandedHistoryId === r.id){ html += renderHistory(r); }
         html += '</div>';
       });
       html += '</div>';
+      html += '<div class="new-routine-bar"><button class="add-ghost" data-action="new-routine">'+icon("plus",16)+' Nueva rutina</button></div>';
     }
-
-    html += '<div class="new-routine-bar"><button class="btn btn-ghost btn-block btn-lg" data-action="new-routine">+ Nueva rutina</button></div>';
-
-    html += '<div class="card sync-box">';
-    html += '<div class="sync-row"><div><div class="total-label">Tu código de sincronización</div><div class="sync-code">'+escapeHtml(syncCode||"—")+'</div></div><button class="btn btn-ghost btn-sm" data-action="copy-sync-code">Copiar</button></div>';
-    html += '<div class="sync-hint">Apunta este código y guárdalo. Introdúcelo en otro dispositivo (móvil, tablet, ordenador) para traerte aquí las mismas rutinas.</div>';
-    html += '<div class="sync-link-row"><input class="sync-input" id="syncCodeInput" maxlength="10" placeholder="Código de otro dispositivo"><button class="btn btn-primary btn-sm" data-action="link-sync-code">Vincular</button></div>';
-    html += '<div class="sync-status" id="syncStatusText"></div>';
-    html += '</div>';
 
     html += '<details class="help"><summary>Cómo funciona</summary><p>Cada ejercicio puede ser <b>por tiempo</b> (cuenta atrás y avisa sola cuando termina) o <b>por repeticiones</b> (tú marcas cuándo has terminado, con el botón o diciendo «hecho»). Entre ejercicios se añade el descanso que definas. El total se calcula solo mientras construyes la rutina, para que puedas ajustarla a los minutos que quieras.</p></details>';
 
@@ -1691,60 +1821,62 @@
     var total = routineTotalSeconds(routine);
     var html = "";
     html += '<div class="screen">';
-    html += '<div class="topbar"><button class="btn btn-ghost btn-sm" data-action="back-home">‹ Rutinas</button></div>';
+    html += '<div class="topbar"><button class="icon-text-btn" data-action="back-home">'+icon("chevron-left",16)+' Rutinas</button></div>';
 
     html += '<div class="editor-header">';
     html += '<input class="name-input" data-field="routine-name" value="'+escapeHtml(routine.name)+'" placeholder="Nombre de la rutina">';
     html += '</div>';
 
-    html += '<div class="total-bar">';
-    html += '<div><div class="total-label">Duración total</div><div class="total-time" id="totalTimeDisplay">'+fmtTime(total)+'</div></div>';
-    html += '<div class="goal-row">';
-    html += '<div class="total-label">Objetivo (min)</div>';
-    html += '<input class="goal-input" type="number" min="0" data-field="target-minutes" value="'+(routine.targetMinutes!=null?routine.targetMinutes:"")+'" placeholder="—">';
-    var deltaHtml = "";
-    if(routine.targetMinutes){
-      var deltaSec = total - routine.targetMinutes*60;
-      var abs = Math.abs(deltaSec);
-      var cls = abs<=10 ? "delta-ok" : (abs<=60 ? "delta-mid" : "delta-off");
-      var label = abs<=10 ? "¡Clavado!" : (deltaSec>0 ? "+"+fmtTime(deltaSec) : "-"+fmtTime(abs));
-      deltaHtml = '<span class="delta-pill '+cls+'" id="deltaPill">'+label+'</span>';
-    }else{
-      deltaHtml = '<span class="delta-pill" id="deltaPill" style="display:none;"></span>';
-    }
-    html += deltaHtml;
-    html += '</div>'; // goal-row
-    html += '<div class="goal-row">';
-    html += '<div class="total-label">Vueltas</div>';
-    html += '<input class="goal-input" type="number" min="1" data-field="rounds" value="'+(routine.rounds!=null?routine.rounds:1)+'">';
-    html += '</div>'; // goal-row (rounds)
-    html += '</div>'; // total-bar
+    html += '<div class="editor-stat"><span class="total-label">Duración</span><span class="total-time" id="totalTimeDisplay">'+fmtTime(total)+'</span></div>';
 
-    html += '<div class="card share-box">';
-    html += '<div class="total-label">Compartir</div>';
-    html += '<div class="goal-row"><div class="total-label">Objetivo (veces/semana)</div><input class="goal-input" type="number" min="0" data-field="weekly-target" value="'+(routine.weeklyTarget!=null?routine.weeklyTarget:"")+'" placeholder="—"></div>';
-    if(routine.linkedCodes && routine.linkedCodes.length){
-      html += '<div class="linked-codes-list">';
-      routine.linkedCodes.forEach(function(c){
-        html += '<span class="linked-code-chip">'+escapeHtml(c)+'<button class="code-remove" data-action="unlink-routine-code" data-code="'+escapeHtml(c)+'" title="Quitar">✕</button></span>';
-      });
-      html += '</div>';
-    }else{
-      html += '<div class="sync-hint">Vincula el código de otra persona para compartir esta rutina y comparar vuestros tiempos.</div>';
-    }
-    html += '<div class="sync-link-row"><input class="sync-input" id="routineCodeInput" maxlength="10" placeholder="Código a vincular"><button class="btn btn-primary btn-sm" data-action="link-routine-code">Vincular</button></div>';
-    html += '<button class="toggle-pill '+(routine.isPublic?'on':'')+'" data-action="toggle-public"><span class="dot '+(routine.isPublic?'on':'')+'"></span>'+(routine.isPublic?'🌍 Pública':'🔒 Privada')+'</button>';
-    html += '</div>';
+    html += '<div class="config-wrap">';
+    html += '<button class="config-toggle'+(configPanelOpen?' open':'')+'" data-action="toggle-config-panel"><span class="left">'+icon("sliders",15)+' Configuración</span><span class="chev">'+icon("chevron-down",16)+'</span></button>';
+    if(configPanelOpen){
+      html += '<div class="config-body">';
 
+      html += '<div class="config-row"><span class="label">Objetivo (min)</span><div style="display:flex;align-items:center;gap:8px;"><input class="goal-input" type="number" min="0" data-field="target-minutes" value="'+(routine.targetMinutes!=null?routine.targetMinutes:"")+'" placeholder="—">';
+      var deltaHtml = "";
+      if(routine.targetMinutes){
+        var deltaSec = total - routine.targetMinutes*60;
+        var abs = Math.abs(deltaSec);
+        var cls = abs<=10 ? "delta-ok" : (abs<=60 ? "delta-mid" : "delta-off");
+        var label = abs<=10 ? "¡Clavado!" : (deltaSec>0 ? "+"+fmtTime(deltaSec) : "-"+fmtTime(abs));
+        deltaHtml = '<span class="delta-pill '+cls+'" id="deltaPill">'+label+'</span>';
+      }else{
+        deltaHtml = '<span class="delta-pill" id="deltaPill" style="display:none;"></span>';
+      }
+      html += deltaHtml + '</div></div>';
+
+      html += '<div class="config-row"><span class="label">Vueltas</span><input class="goal-input" type="number" min="1" data-field="rounds" value="'+(routine.rounds!=null?routine.rounds:1)+'"></div>';
+
+      html += '<div class="config-subhead">Compartir</div>';
+      html += '<div class="config-row"><span class="label">Objetivo (veces/semana)</span><input class="goal-input" type="number" min="0" data-field="weekly-target" value="'+(routine.weeklyTarget!=null?routine.weeklyTarget:"")+'" placeholder="—"></div>';
+      if(routine.linkedCodes && routine.linkedCodes.length){
+        html += '<div class="linked-codes-list">';
+        routine.linkedCodes.forEach(function(c){
+          html += '<span class="linked-code-chip">'+escapeHtml(c)+'<button class="code-remove" data-action="unlink-routine-code" data-code="'+escapeHtml(c)+'" title="Quitar">'+icon("x",11)+'</button></span>';
+        });
+        html += '</div>';
+      }else{
+        html += '<div class="sync-hint">Vincula el código de otra persona para compartir esta rutina y comparar vuestros tiempos.</div>';
+      }
+      html += '<div class="sync-link-row"><input class="sync-input" id="routineCodeInput" maxlength="10" placeholder="Código a vincular"><button class="btn btn-primary btn-sm" data-action="link-routine-code">Vincular</button></div>';
+      html += '<button class="toggle-pill '+(routine.isPublic?'on':'')+'" data-action="toggle-public">'+icon(routine.isPublic?"globe":"lock",13)+' '+(routine.isPublic?'Pública':'Privada')+'</button>';
+
+      html += '</div>'; // config-body
+    }
+    html += '</div>'; // config-wrap
+
+    html += '<div class="section-label">Ejercicios</div>';
     html += '<div class="steps">';
     routine.steps.forEach(function(step, i){
       html += renderStepCard(step, i, routine.steps.length);
     });
     html += '</div>';
 
-    html += '<div class="add-step-bar"><button class="btn btn-ghost btn-block" data-action="add-step">+ Añadir ejercicio</button></div>';
+    html += '<div class="add-step-bar"><button class="add-ghost" data-action="add-step">'+icon("plus",16)+' Añadir ejercicio</button></div>';
 
-    html += '<div class="editor-footer"><button class="btn btn-primary btn-block btn-lg" data-action="start-routine" data-id="'+routine.id+'" '+(routine.steps.length?'':'disabled')+'>▶ Empezar esta rutina</button></div>';
+    html += '<div class="editor-footer"><button class="btn-start" data-action="start-routine" data-id="'+routine.id+'" '+(routine.steps.length?'':'disabled')+'>'+icon("play",16)+' Empezar esta rutina</button></div>';
 
     html += '</div>';
     return html;
@@ -1765,16 +1897,32 @@
   function renderHistory(routine){
     var hist = Array.isArray(routine.history) ? routine.history : [];
     if(!hist.length){
-      return '<div class="history-box"><div class="history-empty">Aún no has completado esta rutina. Termínala una vez para empezar a ver aquí tu historial de tiempos.</div></div>';
+      return '<div class="history-box"><div class="history-title">Tu progreso</div><div class="history-empty">Aún no has completado esta rutina. Termínala una vez para empezar a ver aquí tu historial de tiempos.</div></div>';
     }
     var bestSeconds = Math.min.apply(null, hist.map(function(h){ return h.seconds; }));
+    var lastSeconds = hist[0].seconds; // most recent (history is stored newest-first)
 
     var html = '<div class="history-box">';
-    html += '<div class="history-header"><div class="total-label">Historial de tiempos</div>';
+    html += '<div class="history-header"><div class="history-title">Tu progreso</div>';
     if(hist.length > 1 || routine.shareId){
-      html += '<button class="util-link" data-action="toggle-chart" data-id="'+routine.id+'">'+(showChartForId===routine.id?'Ocultar gráfico':'📊 Comparar')+'</button>';
+      html += '<button class="icon-text-btn" data-action="toggle-chart" data-id="'+routine.id+'">'+icon("bar-chart",14)+' '+(showChartForId===routine.id?'Ocultar gráfico':'Comparar')+'</button>';
     }
     html += '</div>';
+
+    html += '<div class="history-stats">';
+    html += '<div class="stat-tile best"><div class="stat-label">Mejor</div><div class="stat-value">'+fmtTime(bestSeconds)+'</div></div>';
+    html += '<div class="stat-tile"><div class="stat-label">Último</div><div class="stat-value">'+fmtTime(lastSeconds)+'</div></div>';
+    html += '</div>';
+
+    if(hist.length > 1){
+      var firstSeconds = hist[hist.length-1].seconds; // oldest attempt on record
+      if(firstSeconds > 0 && lastSeconds < firstSeconds){
+        var pct = Math.round(((firstSeconds - lastSeconds) / firstSeconds) * 100);
+        if(pct >= 1){
+          html += '<div class="history-insight">'+icon("trending-up",14)+' Tardas un '+pct+'% menos que tu primera vez</div>';
+        }
+      }
+    }
 
     if(showChartForId === routine.id){
       html += routine.shareId ? renderSharedChart(routine) : renderProgressChart(routine);
@@ -1785,7 +1933,7 @@
       var isBest = h.seconds === bestSeconds;
       html += '<div class="history-row'+(isBest?' best':'')+'">';
       html += '<span class="history-left"><span class="history-date">'+fmtDate(h.ts)+'</span></span>';
-      html += '<span class="history-time">'+fmtTime(h.seconds)+(isBest?' 🏆':'')+'</span>';
+      html += '<span class="history-time">'+fmtTime(h.seconds)+(isBest?' <span class="pr-tag">PR</span>':'')+'</span>';
       html += '</div>';
     });
     html += '</div></div>';
@@ -1818,10 +1966,10 @@
     svg += '<line x1="'+padL+'" y1="'+(padT+innerH)+'" x2="'+(padL+innerW)+'" y2="'+(padT+innerH)+'" class="chart-axis"/>';
     svg += '<text x="4" y="'+(padT+4)+'" class="chart-axis-label">'+fmtTime(minS)+'</text>';
     svg += '<text x="4" y="'+(padT+innerH+2)+'" class="chart-axis-label">'+fmtTime(maxS)+'</text>';
-    svg += '<path d="'+path+'" fill="none" stroke="#33c7c1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+    svg += '<path d="'+path+'" fill="none" stroke="#19e3ac" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
     pts.forEach(function(p, i){
       var x = xFor(i, pts.length), y = yFor(p.seconds);
-      svg += '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="3.2" fill="#33c7c1"/>';
+      svg += '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="3.2" fill="#19e3ac"/>';
     });
     svg += '</svg>';
 
@@ -1891,7 +2039,7 @@
     var weekCount = allWeeks.length;
     function xFor(wi){ return weekCount <= 1 ? padL + innerW/2 : padL + (innerW * (wi/(weekCount-1))); }
     function yFor(sec){ return padT + innerH * ((sec - minS) / (maxS - minS)); }
-    var colors = ["#33c7c1","#ff5a36","#ffcf5c","#8bd450","#5ccfe6","#ff8a5c"];
+    var colors = ["#19e3ac","#ff8a4c","#5b8dff","#f5a742","#c084fc","#ff5d5d"];
 
     var svg = '<svg viewBox="0 0 '+W+' '+H+'" class="compare-chart-svg" preserveAspectRatio="xMidYMid meet">';
     svg += '<line x1="'+padL+'" y1="'+padT+'" x2="'+padL+'" y2="'+(padT+innerH)+'" class="chart-axis"/>';
@@ -1934,20 +2082,23 @@
   function renderExplore(){
     var html = "";
     html += '<div class="screen">';
-    html += '<div class="topbar"><button class="btn btn-ghost btn-sm" data-action="back-home">‹ Rutinas</button></div>';
-    html += '<div class="explore-title">🌍 Todo el mundo</div>';
+    html += '<div class="topbar"><button class="icon-text-btn" data-action="back-home">'+icon("chevron-left",16)+' Rutinas</button></div>';
+    html += '<div class="explore-header"><div class="explore-title">Descubre</div><div class="explore-sub">Rutinas de la comunidad</div></div>';
     if(publicRoutinesList === "loading" || publicRoutinesList === null){
-      html += '<div class="empty">Cargando rutinas públicas…</div>';
+      html += '<div class="empty-state"><div class="empty-state-sub">Cargando rutinas públicas…</div></div>';
     }else if(!publicRoutinesList.length){
-      html += '<div class="empty"><span class="mark-big">Nada por aquí todavía</span>Cuando alguien haga pública una rutina, aparecerá en esta lista para que te la lleves a tu Rutinario.</div>';
+      html += '<div class="empty-state">';
+      html += '<div class="empty-state-title">Nada por aquí todavía</div>';
+      html += '<div class="empty-state-sub">Cuando alguien haga pública una rutina, aparecerá en esta lista para que te la lleves a tu Rutinario.</div>';
+      html += '</div>';
     }else{
-      html += '<div class="routine-list">';
-      publicRoutinesList.forEach(function(p, pi){
+      html += '<div class="explore-list">';
+      publicRoutinesList.forEach(function(p){
         var totalP = routineTotalSeconds({ steps: p.steps||[], rounds: p.rounds||1 });
-        html += '<div class="card routine-card" style="--accent:'+routineAccent(pi)+'">';
-        html += '<div class="head"><span class="dot-accent"></span><h3>'+escapeHtml(p.name||"Sin nombre")+'</h3></div>';
-        html += '<div class="meta">'+(p.steps?p.steps.length:0)+' ejercicio'+((p.steps&&p.steps.length===1)?"":"s")+' · '+fmtTime(totalP)+' total</div>';
-        html += '<div class="actions"><button class="btn btn-primary btn-lg" data-action="add-public-routine" data-id="'+p.id+'">+ Añadir a mi Rutinario</button></div>';
+        html += '<div class="explore-unit">';
+        html += '<div><div class="explore-name">'+escapeHtml(p.name||"Sin nombre")+'</div>';
+        html += '<div class="explore-meta">'+(p.steps?p.steps.length:0)+' ejercicio'+((p.steps&&p.steps.length===1)?"":"s")+' · '+fmtTime(totalP)+'</div></div>';
+        html += '<button class="btn-outline" data-action="add-public-routine" data-id="'+p.id+'">'+icon("plus",15)+' Añadir</button>';
         html += '</div>';
       });
       html += '</div>';
@@ -1974,17 +2125,40 @@
     return html;
   }
 
+  function stepSummaryLine(step){
+    var sets = Math.max(1, Number(step.sets)||1);
+    var main = step.type === "time" ? (step.seconds||0)+"s" : (step.reps||0)+" reps";
+    var parts = [main];
+    if(sets>1) parts.push(sets+" series");
+    if(step.rest) parts.push(step.rest+"s descanso");
+    return parts.join(" · ");
+  }
+
   function renderStepCard(step, i, count){
-    var html = '<div class="card step-card">';
+    var collapsed = collapsedSteps[step.id] !== false; // collapsed by default until opened
+    var displayName = step.name ? escapeHtml(step.name) : ("Ejercicio "+(i+1));
+
+    if(collapsed){
+      var html0 = '<div class="step-row collapsed">';
+      html0 += '<button class="step-summary-row" data-action="toggle-step" data-step="'+step.id+'">';
+      html0 += '<span class="step-num">'+(i+1)+'</span>';
+      html0 += '<span class="step-summary-text"><span class="step-summary-name">'+displayName+'</span><span class="step-summary-meta">'+stepSummaryLine(step)+'</span></span>';
+      html0 += '<span class="step-chevron">'+icon("chevron-down",16)+'</span>';
+      html0 += '</button>';
+      html0 += '</div>';
+      return html0;
+    }
+
+    var html = '<div class="step-row expanded">';
 
     html += '<div class="step-head">';
-    html += '<span class="step-index">'+(i+1)+'</span>';
+    html += '<button class="step-num step-num-btn" data-action="toggle-step" data-step="'+step.id+'" title="Contraer">'+(i+1)+'</button>';
     html += '<input class="step-name" data-field="name" data-step="'+step.id+'" value="'+escapeHtml(step.name)+'" placeholder="Nombre del ejercicio">';
     html += '<div class="step-menu">';
-    html += '<button class="tool-btn" data-action="move-step" data-dir="up" data-step="'+step.id+'" '+(i===0?'disabled':'')+' title="Subir">▲</button>';
-    html += '<button class="tool-btn" data-action="move-step" data-dir="down" data-step="'+step.id+'" '+(i===count-1?'disabled':'')+' title="Bajar">▼</button>';
-    html += '<button class="tool-btn" data-action="duplicate-step" data-step="'+step.id+'" title="Duplicar">⧉</button>';
-    html += '<button class="tool-btn remove" data-action="remove-step" data-step="'+step.id+'" title="Eliminar">✕</button>';
+    html += '<button class="tool-btn" data-action="move-step" data-dir="up" data-step="'+step.id+'" '+(i===0?'disabled':'')+' title="Subir">'+icon("chevron-up",15)+'</button>';
+    html += '<button class="tool-btn" data-action="move-step" data-dir="down" data-step="'+step.id+'" '+(i===count-1?'disabled':'')+' title="Bajar">'+icon("chevron-down",15)+'</button>';
+    html += '<button class="tool-btn" data-action="duplicate-step" data-step="'+step.id+'" title="Duplicar">'+icon("copy",14)+'</button>';
+    html += '<button class="tool-btn remove" data-action="remove-step" data-step="'+step.id+'" title="Eliminar">'+icon("x",15)+'</button>';
     html += '</div>';
     html += '</div>';
 
@@ -2024,25 +2198,24 @@
     if(player.phase === "done"){
       var routine = player.routine;
       var html = '<div class="summary">';
-      html += '<div class="phase-pill done">Completado</div>';
-      html += '<h2 class="big-check">¡Entrenamiento completado!</h2>';
-      html += '<div class="sub">'+escapeHtml(routine?routine.name:"")+'</div>';
-      html += '<div class="stat">'+fmtTime(player.totalElapsed)+'</div>';
-      html += '<div class="sub">tiempo total</div>';
+      html += '<div class="summary-check">'+icon("check",28)+'</div>';
+      html += '<div class="summary-title">Entrenamiento completado</div>';
+      html += '<div class="summary-sub">'+escapeHtml(routine?routine.name:"")+'</div>';
+      html += '<div class="summary-stat">'+fmtTime(player.totalElapsed)+'</div>';
       if(player.deltaVsTarget != null){
         var d = player.deltaVsTarget;
         if(Math.abs(d) <= 5){
-          html += '<div class="sub">Igual que tu objetivo anterior</div>';
+          html += '<div class="summary-sub">Igual que tu objetivo anterior</div>';
         }else if(d < 0){
-          html += '<div class="sub">'+fmtTime(Math.abs(d))+' más rápido que tu objetivo anterior 🎉</div>';
+          html += '<div class="summary-highlight">'+icon("trophy",13)+' '+fmtTime(Math.abs(d))+' más rápido que tu objetivo anterior</div>';
         }else{
-          html += '<div class="sub">'+fmtTime(d)+' más lento que tu objetivo anterior</div>';
+          html += '<div class="summary-sub">'+fmtTime(d)+' más lento que tu objetivo anterior</div>';
         }
       }
-      html += '<div class="sub">Nuevo objetivo para la próxima vez: '+fmtTime(player.totalElapsed)+'</div>';
-      html += '<div class="actions">';
-      html += '<button class="btn btn-ghost btn-lg" data-action="back-home">Inicio</button>';
-      html += '<button class="btn btn-primary btn-lg" data-action="restart-routine" data-id="'+(routine?routine.id:"")+'">Repetir</button>';
+      html += '<div class="summary-note">Próximo objetivo: '+fmtTime(player.totalElapsed)+'</div>';
+      html += '<div class="summary-actions">';
+      html += '<button class="btn btn-ghost btn-lg" data-action="back-home">'+icon("home",15)+' Inicio</button>';
+      html += '<button class="btn btn-primary btn-lg" data-action="restart-routine" data-id="'+(routine?routine.id:"")+'">'+icon("play",15)+' Repetir</button>';
       html += '</div>';
       html += '</div>';
       return html;
@@ -2061,17 +2234,23 @@
       if(item.roundsTotal && item.roundsTotal>1) stepOfExtra += " · Vuelta "+item.roundIndex+"/"+item.roundsTotal;
     }
 
-    var accent = player.accent || ROUTINE_ACCENTS[0];
     var html = '<div class="player">';
 
-    html += '<div class="player-header" style="--accent:'+accent+'">';
+    html += '<div class="player-header">';
     html += '<div class="player-top">';
-    html += '<button class="player-exit" data-action="exit-workout">‹ Salir</button>';
+    html += '<button class="player-exit" data-action="exit-workout">'+icon("chevron-left",15)+' Salir</button>';
     html += '<span class="player-title">'+escapeHtml(routine.name)+'</span>';
     html += '</div>';
 
-    var overallPct = player.totalPlanned>0 ? Math.min(100,(player.totalElapsed/player.totalPlanned)*100) : 0;
-    html += '<div class="progress-track"><div class="progress-fill" id="overallFill" style="width:'+overallPct+'%"></div></div>';
+    var stepDotsActive = isRest ? -1 : stepNumber;
+    var stepDotsDone = isRest ? stepNumber : stepNumber-1;
+    var dotsHtml = '<div class="step-dots">';
+    for(var di=1; di<=exerciseCount; di++){
+      var dotCls = di===stepDotsActive ? "active" : (di<=stepDotsDone ? "done" : "");
+      dotsHtml += '<span class="step-dot '+dotCls+'"></span>';
+    }
+    dotsHtml += '</div>';
+    html += dotsHtml;
     html += '<span class="player-total" id="totalElapsed">'+fmtTime(player.totalElapsed)+' / '+fmtTime(player.totalPlanned)+'</span>';
     html += '</div>'; // player-header
 
@@ -2091,8 +2270,16 @@
 
     if(isTimed){
       var pct = item.seconds>0 ? Math.max(0,Math.min(100,(player.remaining/item.seconds)*100)) : 0;
-      html += '<div class="timer-digits '+(isRest?'rest':'work')+'" id="timerDigits">'+fmtTime(player.remaining)+'</div>';
-      html += '<div class="ring-track"><div class="ring-fill '+(isRest?'rest':'work')+'" id="ringFill" style="width:'+pct+'%"></div></div>';
+      var ringPhase = isRest ? "rest" : "work";
+      var CIRC = 339.3;
+      var ringOffset = CIRC * (1 - pct/100);
+      html += '<div class="timer-ring-wrap">';
+      html += '<svg class="timer-ring" viewBox="0 0 120 120">';
+      html += '<circle class="timer-ring-track" cx="60" cy="60" r="54"/>';
+      html += '<circle class="timer-ring-fill '+ringPhase+'" id="ringFill" cx="60" cy="60" r="54" style="stroke-dasharray:'+CIRC+';stroke-dashoffset:'+ringOffset+'"/>';
+      html += '</svg>';
+      html += '<div class="timer-digits '+ringPhase+'" id="timerDigits">'+fmtTime(player.remaining)+'</div>';
+      html += '</div>';
     }else{
       html += '<div class="reps-block">';
       html += '<div class="reps-number">'+(item.reps||"—")+'</div>';
@@ -2107,37 +2294,41 @@
     html += '<div class="controls">';
 
     if(!isTimed){
-      html += '<div class="done-btn-wrap"><button class="btn btn-go btn-block btn-lg" data-action="confirm-done">✓ Hecho</button></div>';
+      html += '<div class="done-btn-wrap"><button class="btn btn-go" data-action="confirm-done">'+icon("check",19)+' Hecho</button></div>';
     }
 
     html += '<div class="transport">';
-    html += '<button class="btn btn-ghost btn-icon" data-action="prev" '+(player.index<=0?'disabled':'')+' title="Anterior">‹</button>';
+    html += '<button class="transport-side" data-action="prev" '+(player.index<=0?'disabled':'')+' title="Anterior">'+icon("chevron-left",18)+'</button>';
+    var mainVariant = isTimed ? "primary" : "secondary";
     if(player.phase === "running"){
-      html += '<button class="btn btn-primary btn-lg" data-action="pause">⏸ Pausar</button>';
+      html += '<button class="transport-main '+mainVariant+'" data-action="pause">'+icon("pause",16)+' Pausar</button>';
     }else{
-      html += '<button class="btn btn-primary btn-lg" data-action="resume">▶ Reanudar</button>';
+      html += '<button class="transport-main '+mainVariant+'" data-action="resume">'+icon("play",16)+' Reanudar</button>';
     }
-    html += '<button class="btn btn-ghost btn-icon" data-action="skip" title="Saltar">›</button>';
+    html += '<button class="transport-side" data-action="skip" title="Saltar">'+icon("chevron-right",18)+'</button>';
     html += '</div>';
 
-    html += '<div class="util-controls">';
-    var voiceClass = "toggle-pill";
-    var voiceLabel = "Voz";
-    var voiceDotOn = false;
-    if(!voiceSupported){ voiceClass += " error"; voiceLabel = "Voz no disp."; }
-    else if(voiceError){ voiceClass += " error"; voiceLabel = "Voz: error"; }
-    else if(state.settings.voice && voiceListening){ voiceClass += " listening"; voiceLabel = "Escuchando"; voiceDotOn = true; }
-    else if(state.settings.voice && !voiceListening){ voiceClass += " on"; voiceLabel = "Activando…"; }
-    var voiceIndicator = voiceDotOn
-      ? '<span class="voice-wave"><i></i><i></i><i></i><i></i></span>'
-      : '<span class="dot"></span>';
-    html += '<button class="'+voiceClass+'" data-action="toggle-voice" '+(!voiceSupported?'disabled':'')+'>'+voiceIndicator+' 🎤 '+voiceLabel+'</button>';
-    html += '<button class="toggle-pill '+(state.settings.sound?'on':'')+'" data-action="toggle-sound"><span class="dot '+(state.settings.sound?'on':'')+'"></span>'+(state.settings.sound?'🔔 Sonido':'🔕 Silencio')+'</button>';
-    html += '<button class="toggle-pill '+(state.settings.announce?'on':'')+'" data-action="toggle-announce"><span class="dot '+(state.settings.announce?'on':'')+'"></span>'+(state.settings.announce?'📢 Aviso siguiente':'🔇 Sin aviso')+'</button>';
-    html += '</div>';
+    html += '<div class="audio-trigger-row"><button class="audio-trigger'+(audioPanelOpen?' open':'')+'" data-action="toggle-audio-panel">'+icon("volume",14)+' Audio '+icon(audioPanelOpen?"chevron-up":"chevron-down",13)+'</button></div>';
 
-    if(voiceSupported){
-      html += '<div class="voice-note">Di «hecho» para confirmar un ejercicio de repeticiones, o «pausa» / «continúa» para el temporizador.'+(voiceError?' '+voiceError:'')+'</div>';
+    if(audioPanelOpen){
+      html += '<div class="audio-panel">';
+
+      var voiceLabel = "Voz";
+      var voiceOn = false, voiceListeningNow = false;
+      if(!voiceSupported){ voiceLabel = "Voz no disponible"; }
+      else if(voiceError){ voiceLabel = "Voz: error"; }
+      else if(state.settings.voice && voiceListening){ voiceLabel = "Escuchando"; voiceOn = true; voiceListeningNow = true; }
+      else if(state.settings.voice && !voiceListening){ voiceLabel = "Activando…"; voiceOn = true; }
+      html += '<div class="audio-row'+(voiceOn?' active':'')+'"><span class="left">'+icon("mic",15)+' '+voiceLabel+'</span><button class="audio-switch'+(voiceOn?' on':'')+(voiceListeningNow?' listening':'')+'" data-action="toggle-voice" '+(!voiceSupported?'disabled':'')+' aria-label="Voz"></button></div>';
+      if(voiceError){ html += '<div class="audio-error-text">'+voiceError+'</div>'; }
+
+      html += '<div class="audio-row'+(state.settings.sound?' active':'')+'"><span class="left">'+icon("bell",15)+' Sonido</span><button class="audio-switch'+(state.settings.sound?' on':'')+'" data-action="toggle-sound" aria-label="Sonido"></button></div>';
+      html += '<div class="audio-row'+(state.settings.announce?' active':'')+'"><span class="left">'+icon("volume",15)+' Aviso del siguiente</span><button class="audio-switch'+(state.settings.announce?' on':'')+'" data-action="toggle-announce" aria-label="Aviso del siguiente"></button></div>';
+
+      if(voiceSupported){
+        html += '<div class="audio-hint">Di «hecho» para confirmar un ejercicio de repeticiones, o «pausa» / «continúa» para el temporizador.</div>';
+      }
+      html += '</div>';
     }
 
     html += '<div class="end-link"><button data-action="exit-workout">Terminar entrenamiento</button></div>';
