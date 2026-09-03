@@ -133,10 +133,11 @@
   .link-btn:hover{ color:var(--text); }
 
   /* ---------- top bar / icon buttons (shared) ---------- */
-  .topbar-main{ padding:var(--sp-5) var(--sp-5) var(--sp-1); }
-  .wordmark{ display:flex; align-items:center; gap:7px; font-family:var(--font-ui); font-weight:800; font-size:15px; letter-spacing:0.18em; color:var(--text); }
-  .wordmark-mark{ width:6px; height:6px; background:var(--accent); border-radius:2px; transform:rotate(45deg); flex-shrink:0; }
-  .home-context{ padding:2px var(--sp-5) var(--sp-4); color:var(--text-2); font-size:13.5px; }
+  .topbar-main{ display:flex; align-items:flex-start; justify-content:space-between; padding:var(--sp-6) var(--sp-5) 2px; }
+  .wordmark{ display:flex; align-items:baseline; gap:2px; font-family:var(--font-display); font-weight:400; font-size:clamp(30px,8vw,38px); line-height:0.85; letter-spacing:0.015em; color:var(--text); }
+  .wordmark-mark{ width:8px; height:8px; background:var(--accent); border-radius:2px; transform:translateY(-9px) rotate(45deg); flex-shrink:0; }
+  .topbar-main .topbar-actions{ margin-top:3px; }
+  .home-context{ padding:0 var(--sp-5) var(--sp-5); color:var(--text-2); font-size:14px; font-weight:500; }
   .topbar-actions{ display:flex; gap:2px; }
   .icon-btn{
     appearance:none; border:none; background:transparent; color:var(--text-2);
@@ -152,18 +153,20 @@
   .icon-text-btn:hover{ color:var(--text); background:var(--surface-2); }
 
   /* ---------- home ---------- */
-  .routine-list{ display:flex; flex-direction:column; padding:0 var(--sp-5); }
-  .routine-unit{ position:relative; padding:var(--sp-5) 0; border-bottom:1px solid var(--border); }
-  .routine-list .routine-unit:last-child{ border-bottom:none; }
-  .routine-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-3); }
-  .routine-name{ font-family:var(--font-ui); font-weight:800; font-size:21px; color:var(--text); line-height:1.25; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .routine-meta{ color:var(--text-2); font-size:13px; margin-top:3px; font-variant-numeric:tabular-nums; }
-  .routine-badges{ display:flex; gap:6px; margin-top:9px; flex-wrap:wrap; }
+  .hero-next{
+    position:relative; margin:var(--sp-1) var(--sp-5) var(--sp-6); padding:var(--sp-6) var(--sp-5) var(--sp-5);
+    border-radius:var(--r-lg); background:var(--surface); border:1px solid var(--border);
+  }
+  .hero-next-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-3); }
+  .hero-next-label{ font-size:11.5px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); }
+  .hero-next-name{ font-family:var(--font-display); font-weight:400; font-size:clamp(28px,8vw,36px); line-height:1.08; color:var(--text); margin-top:3px; overflow-wrap:anywhere; }
+  .hero-next-meta{ color:var(--text-2); font-size:13.5px; margin-top:7px; font-variant-numeric:tabular-nums; }
+  .hero-next-badges{ display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
   .badge{
     font-size:11px; font-weight:700; padding:3px 9px; border-radius:var(--r-full); background:var(--surface-2); color:var(--text-2);
     display:inline-flex; align-items:center; gap:4px;
   }
-  .routine-cta{ margin-top:var(--sp-4); }
+  .hero-next-cta{ margin-top:var(--sp-5); }
   .btn-start{
     width:100%; height:54px; border:none; border-radius:var(--r-md); background:var(--accent); color:var(--accent-ink);
     font-weight:800; font-size:15.5px; letter-spacing:0.01em; cursor:pointer;
@@ -171,6 +174,24 @@
   }
   .btn-start:active{ transform:scale(0.98); }
   .btn-start[disabled]{ opacity:0.35; cursor:not-allowed; }
+  .btn-start.lg{ height:60px; font-size:17px; }
+
+  .routine-list{ display:flex; flex-direction:column; padding:0 var(--sp-5); }
+  .routine-row{ position:relative; padding:13px 0; border-bottom:1px solid var(--border); }
+  .routine-list .routine-row:last-child{ border-bottom:none; }
+  .routine-row-top{ display:flex; align-items:center; gap:var(--sp-3); }
+  .routine-row-main{ flex:1; min-width:0; }
+  .routine-row-name{ font-family:var(--font-ui); font-weight:700; font-size:16px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .routine-row-meta{ display:flex; align-items:center; gap:5px; color:var(--text-2); font-size:12.5px; margin-top:2px; font-variant-numeric:tabular-nums; }
+  .routine-row-actions{ display:flex; align-items:center; gap:2px; flex-shrink:0; }
+  .row-play-btn{
+    appearance:none; border:none; background:var(--surface-2); color:var(--text); width:40px; height:40px;
+    border-radius:var(--r-full); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
+    transition:background .12s ease, color .12s ease;
+  }
+  .row-play-btn:hover{ background:var(--accent-soft); color:var(--accent); }
+  .row-play-btn:active{ transform:scale(0.92); }
+  .row-play-btn[disabled]{ opacity:0.35; cursor:not-allowed; }
 
   .menu-backdrop{ position:fixed; inset:0; z-index:29; background:transparent; }
   .routine-menu{
@@ -1106,6 +1127,8 @@
     beep(520,70,0.16,"sine");
   }
 
+  var ttsSpeaking = false; // true while an announcement is audibly playing (plus a short tail),
+                            // so the mic doesn't overhear Marcador's own voice and misfire a command
   function speakText(text){
     if(!state.settings.announce) return;
     try{
@@ -1115,6 +1138,10 @@
       u.lang = "es-ES";
       u.rate = 1;
       u.pitch = 1;
+      u.onstart = function(){ ttsSpeaking = true; };
+      var clearSpeaking = function(){ window.setTimeout(function(){ ttsSpeaking = false; }, 500); };
+      u.onend = clearSpeaking;
+      u.onerror = clearSpeaking;
       window.speechSynthesis.speak(u);
     }catch(e){}
   }
@@ -1211,6 +1238,7 @@
     var resumeWords = ["continua","continúa","reanuda","sigue"];
     function has(list){ return list.some(function(w){ return text.indexOf(w) !== -1; }); }
 
+    if(ttsSpeaking) return; // ignore anything heard while Marcador itself is talking (echo/self-hearing)
     if(player.phase !== "running" && player.phase !== "paused") return;
 
     if(has(doneWords)){
@@ -1740,6 +1768,43 @@
     if(view === "home") setSyncStatus(syncStatus);
   }
 
+  function pickFeaturedRoutine(list){
+    if(!list.length) return null;
+    var best = list[0];
+    var bestTs = (best.history && best.history.length) ? best.history[0].ts : 0;
+    for(var i=1;i<list.length;i++){
+      var r = list[i];
+      var ts = (r.history && r.history.length) ? r.history[0].ts : 0;
+      if(ts < bestTs){ best = r; bestTs = ts; }
+    }
+    return best;
+  }
+
+  function weeklySessionCount(){
+    var wk = weekKey(Date.now());
+    var count = 0;
+    state.routines.forEach(function(r){
+      (r.history||[]).forEach(function(h){ if(weekKey(h.ts) === wk) count++; });
+    });
+    return count;
+  }
+
+  function routineMenuAndHistory(r){
+    var html = "";
+    if(openMenuId === r.id){
+      html += '<div class="menu-backdrop" data-action="close-menu"></div>';
+      html += '<div class="routine-menu">';
+      html += '<button class="routine-menu-item" data-action="edit-routine" data-id="'+r.id+'">'+icon("pencil",15)+' Editar</button>';
+      html += '<button class="routine-menu-item" data-action="duplicate-routine" data-id="'+r.id+'">'+icon("copy",15)+' Duplicar</button>';
+      html += '<button class="routine-menu-item" data-action="toggle-history" data-id="'+r.id+'">'+icon("bar-chart",15)+' '+(expandedHistoryId===r.id?'Ocultar historial':'Ver historial')+'</button>';
+      html += '<div class="routine-menu-sep"></div>';
+      html += '<button class="routine-menu-item danger" data-action="delete-routine" data-id="'+r.id+'">'+icon("trash",15)+' Eliminar</button>';
+      html += '</div>';
+    }
+    if(expandedHistoryId === r.id){ html += renderHistory(r); }
+    return html;
+  }
+
   function renderHome(){
     var html = "";
     html += '<div class="screen">';
@@ -1753,7 +1818,11 @@
     html += '</div>';
 
     if(state.routines.length){
-      html += '<div class="home-context">Listo para entrenar.</div>';
+      var wCount = weeklySessionCount();
+      var contextText = wCount > 0
+        ? (wCount+' entrenamiento'+(wCount===1?'':'s')+' esta semana. Sigue así.')
+        : 'Ningún entrenamiento esta semana. Vamos a por el primero.';
+      html += '<div class="home-context">'+contextText+'</div>';
     }
 
     if(syncPanelOpen){
@@ -1774,38 +1843,53 @@
       html += '<button class="link-btn" data-action="open-explore">Explorar rutinas</button>';
       html += '</div></div>';
     }else{
-      html += '<div class="routine-list">';
-      state.routines.forEach(function(r){
-        var total = routineTotalSeconds(r);
-        var menuOpen = openMenuId === r.id;
-        html += '<div class="routine-unit">';
-        html += '<div class="routine-top">';
-        html += '<div class="routine-name">'+escapeHtml(r.name||"Sin nombre")+'</div>';
-        html += '<button class="icon-btn" data-action="toggle-routine-menu" data-id="'+r.id+'" title="Más opciones">'+icon("more-vertical",18)+'</button>';
-        html += '</div>';
-        var roundsN = Math.max(1, Number(r.rounds)||1);
-        html += '<div class="routine-meta">'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+(roundsN>1?' · '+roundsN+' vueltas':'')+' · '+fmtTime(total)+(r.targetMinutes?' · meta '+r.targetMinutes+' min':'')+'</div>';
-        var badges = "";
-        if(r.isPublic) badges += '<span class="badge">'+icon("globe",11)+' Pública</span>';
-        if(r.linkedCodes && r.linkedCodes.length) badges += '<span class="badge">'+icon("link",11)+' Compartida ('+(r.linkedCodes.length+1)+')</span>';
-        if(badges) html += '<div class="routine-badges">'+badges+'</div>';
-        html += '<div class="routine-cta"><button class="btn-start" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+'>'+icon("play",16)+' Empezar</button></div>';
+      var featured = pickFeaturedRoutine(state.routines);
+      var rest = state.routines.filter(function(r){ return r.id !== featured.id; });
 
-        if(menuOpen){
-          html += '<div class="menu-backdrop" data-action="close-menu"></div>';
-          html += '<div class="routine-menu">';
-          html += '<button class="routine-menu-item" data-action="edit-routine" data-id="'+r.id+'">'+icon("pencil",15)+' Editar</button>';
-          html += '<button class="routine-menu-item" data-action="duplicate-routine" data-id="'+r.id+'">'+icon("copy",15)+' Duplicar</button>';
-          html += '<button class="routine-menu-item" data-action="toggle-history" data-id="'+r.id+'">'+icon("bar-chart",15)+' '+(expandedHistoryId===r.id?'Ocultar historial':'Ver historial')+'</button>';
-          html += '<div class="routine-menu-sep"></div>';
-          html += '<button class="routine-menu-item danger" data-action="delete-routine" data-id="'+r.id+'">'+icon("trash",15)+' Eliminar</button>';
-          html += '</div>';
-        }
-
-        if(expandedHistoryId === r.id){ html += renderHistory(r); }
-        html += '</div>';
-      });
+      var fTotal = routineTotalSeconds(featured);
+      var fRounds = Math.max(1, Number(featured.rounds)||1);
+      var everDone = featured.history && featured.history.length;
+      html += '<div class="hero-next">';
+      html += '<div class="hero-next-top">';
+      html += '<div><div class="hero-next-label">'+(everDone?'Te toca':'Empieza por aquí')+'</div>';
+      html += '<div class="hero-next-name">'+escapeHtml(featured.name||"Sin nombre")+'</div></div>';
+      html += '<button class="icon-btn" data-action="toggle-routine-menu" data-id="'+featured.id+'" title="Más opciones">'+icon("more-vertical",18)+'</button>';
       html += '</div>';
+      html += '<div class="hero-next-meta">'+featured.steps.length+' ejercicio'+(featured.steps.length===1?"":"s")+(fRounds>1?' · '+fRounds+' vueltas':'')+' · '+fmtTime(fTotal)+(featured.targetMinutes?' · meta '+featured.targetMinutes+' min':'')+'</div>';
+      var heroBadges = "";
+      if(featured.isPublic) heroBadges += '<span class="badge">'+icon("globe",11)+' Pública</span>';
+      if(featured.linkedCodes && featured.linkedCodes.length) heroBadges += '<span class="badge">'+icon("link",11)+' Compartida ('+(featured.linkedCodes.length+1)+')</span>';
+      if(heroBadges) html += '<div class="hero-next-badges">'+heroBadges+'</div>';
+      html += '<div class="hero-next-cta"><button class="btn-start lg" data-action="start-routine" data-id="'+featured.id+'" '+(featured.steps.length?'':'disabled')+'>'+icon("play",18)+' Empezar</button></div>';
+      html += routineMenuAndHistory(featured);
+      html += '</div>';
+
+      if(rest.length){
+        html += '<div class="section-label">Tus rutinas</div>';
+        html += '<div class="routine-list">';
+        rest.forEach(function(r){
+          var total = routineTotalSeconds(r);
+          var roundsN = Math.max(1, Number(r.rounds)||1);
+          html += '<div class="routine-row">';
+          html += '<div class="routine-row-top">';
+          html += '<div class="routine-row-main">';
+          html += '<div class="routine-row-name">'+escapeHtml(r.name||"Sin nombre")+'</div>';
+          html += '<div class="routine-row-meta"><span>'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+(roundsN>1?' · '+roundsN+' vueltas':'')+' · '+fmtTime(total)+'</span>';
+          if(r.isPublic) html += icon("globe",11);
+          if(r.linkedCodes && r.linkedCodes.length) html += icon("link",11);
+          html += '</div>';
+          html += '</div>';
+          html += '<div class="routine-row-actions">';
+          html += '<button class="row-play-btn" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+' title="Empezar">'+icon("play",16)+'</button>';
+          html += '<button class="icon-btn" data-action="toggle-routine-menu" data-id="'+r.id+'" title="Más opciones">'+icon("more-vertical",18)+'</button>';
+          html += '</div>';
+          html += '</div>';
+          html += routineMenuAndHistory(r);
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+
       html += '<div class="new-routine-bar"><button class="add-ghost" data-action="new-routine">'+icon("plus",16)+' Nueva rutina</button></div>';
     }
 
