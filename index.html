@@ -410,7 +410,10 @@
     display:flex; align-items:center; justify-content:center;
   }
   .step-collapse-btn:hover{ color:var(--text); }
-  .step-menu{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .step-menu{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    margin-top:16px; padding-top:14px; border-top:1px solid var(--border);
+  }
   .step-menu-tools{ display:flex; gap:4px; flex-shrink:0; }
 
   .seg-toggle{ display:flex; background:var(--surface-2); border-radius:var(--r-full); padding:3px; gap:2px; margin-bottom:12px; }
@@ -2457,15 +2460,6 @@
     html += '<button class="step-collapse-btn" data-action="toggle-step" data-step="'+step.id+'" title="Plegar">'+icon("chevron-up",18)+'</button>';
     html += '</div>';
 
-    html += '<div class="step-menu">';
-    html += '<button class="tool-btn remove" data-action="remove-step" data-step="'+step.id+'" title="Eliminar ejercicio">'+icon("trash",14)+' Eliminar</button>';
-    html += '<div class="step-menu-tools">';
-    html += '<button class="tool-btn" data-action="move-step" data-dir="up" data-step="'+step.id+'" '+(i===0?'disabled':'')+' title="Subir">'+icon("chevron-up",15)+'</button>';
-    html += '<button class="tool-btn" data-action="move-step" data-dir="down" data-step="'+step.id+'" '+(i===count-1?'disabled':'')+' title="Bajar">'+icon("chevron-down",15)+'</button>';
-    html += '<button class="tool-btn" data-action="duplicate-step" data-step="'+step.id+'" title="Duplicar">'+icon("copy",14)+'</button>';
-    html += '</div>';
-    html += '</div>';
-
     html += '<div class="seg-toggle">';
     html += '<button type="button" class="'+(step.type==='time'?'active type-time':'')+'" data-action="set-type" data-type="time" data-step="'+step.id+'">Tiempo</button>';
     html += '<button type="button" class="'+(step.type==='reps'?'active type-reps':'')+'" data-action="set-type" data-type="reps" data-step="'+step.id+'">Repeticiones</button>';
@@ -2493,6 +2487,15 @@
     }
 
     html += '</div>'; // step-grid
+
+    html += '<div class="step-menu">';
+    html += '<button class="tool-btn remove" data-action="remove-step" data-step="'+step.id+'" title="Eliminar ejercicio">'+icon("trash",14)+' Eliminar</button>';
+    html += '<div class="step-menu-tools">';
+    html += '<button class="tool-btn" data-action="move-step" data-dir="up" data-step="'+step.id+'" '+(i===0?'disabled':'')+' title="Subir">'+icon("chevron-up",15)+'</button>';
+    html += '<button class="tool-btn" data-action="move-step" data-dir="down" data-step="'+step.id+'" '+(i===count-1?'disabled':'')+' title="Bajar">'+icon("chevron-down",15)+'</button>';
+    html += '<button class="tool-btn" data-action="duplicate-step" data-step="'+step.id+'" title="Duplicar">'+icon("copy",14)+'</button>';
+    html += '</div>';
+    html += '</div>';
 
     html += '</div>';
     return html;
