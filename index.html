@@ -144,13 +144,17 @@
   }
   .home-context{ padding:0 var(--sp-5) var(--sp-5); color:var(--text-2); font-size:14px; font-weight:500; }
   .topbar-actions{ display:flex; gap:2px; flex-shrink:0; }
-  /* Three header icons (explore/sync/profile) plus the wordmark badge no longer fit
+  /* Four header icons (explore/sync/profile/ayuda) plus the wordmark badge no longer fit
      comfortably on narrow phones -- tighten spacing and icon size just for those. */
   @media (max-width:380px){
     .topbar-main{ padding-left:var(--sp-4); padding-right:var(--sp-4); }
     .topbar-main .wordmark{ gap:7px; font-size:clamp(24px,7vw,38px); }
     .topbar-main .topbar-actions{ gap:0; }
     .topbar-main .icon-btn{ width:33px; height:33px; }
+  }
+  @media (max-width:350px){
+    .topbar-main .wordmark{ gap:5px; font-size:clamp(20px,6.4vw,38px); }
+    .topbar-main .icon-btn{ width:29px; height:29px; }
   }
   .icon-btn{
     appearance:none; border:none; background:transparent; color:var(--text-2);
@@ -623,6 +627,35 @@
   .help summary:before{ content:"?  "; color:var(--text-3); }
   .help[open] summary{ margin-bottom:8px; }
   .help p{ color:var(--text-2); font-size:13px; line-height:1.55; margin-bottom:8px; }
+
+  /* ---------- guided tour ---------- */
+  .tour-highlight{
+    position:fixed; pointer-events:none; z-index:900; border-radius:12px;
+    box-shadow:0 0 0 9999px rgba(2,4,7,0.72), 0 0 0 2px var(--accent), 0 10px 28px rgba(0,0,0,0.5);
+    transition:left .22s ease, top .22s ease, width .22s ease, height .22s ease;
+  }
+  .tour-card{
+    position:fixed; z-index:910; width:min(320px, calc(100vw - 28px));
+    background:var(--surface-2); border:1px solid var(--border-strong); border-radius:var(--r-md);
+    padding:16px 18px; box-shadow:0 24px 60px rgba(0,0,0,0.55);
+    transition:left .22s ease, top .22s ease;
+  }
+  .tour-kicker{ font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; color:var(--accent); margin-bottom:6px; }
+  .tour-title{ font-family:var(--font-display); font-size:20px; letter-spacing:0.01em; color:var(--text); margin-bottom:6px; }
+  .tour-desc{ font-size:13.5px; line-height:1.5; color:var(--text-2); margin-bottom:12px; }
+  .tour-progress{ font-size:11.5px; font-weight:700; color:var(--text-3); margin-bottom:12px; }
+  .tour-actions{ display:flex; align-items:center; gap:8px; }
+  .tour-btn{
+    appearance:none; border:none; background:var(--surface-3); color:var(--text-2);
+    font-family:var(--font-ui); font-size:13px; font-weight:700; padding:9px 14px;
+    border-radius:var(--r-sm); cursor:pointer;
+  }
+  .tour-btn:hover{ color:var(--text); }
+  .tour-btn.tour-exit{ background:none; color:var(--text-3); padding:9px 4px; margin-right:auto; }
+  .tour-btn.tour-exit:hover{ color:var(--text-2); }
+  .tour-btn.primary{ background:var(--accent); color:var(--accent-ink); }
+  .tour-btn.primary:hover{ color:var(--accent-ink); opacity:0.9; }
+  .tour-btn:disabled{ opacity:0.35; cursor:default; }
 </style>
 </head>
 <body>
@@ -1112,7 +1145,8 @@
     star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
     "star-filled": '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none"/>',
     zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/>',
-    user: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'
+    user: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    "help-circle": '<circle cx="12" cy="12" r="9"/><path d="M9.2 9a2.8 2.8 0 1 1 4.3 2.4c-.9.6-1.5 1.1-1.5 2.3"/><line x1="12" y1="17.2" x2="12" y2="17.21"/>'
   };
   function icon(name, size){
     var s = size || 16;
@@ -1812,6 +1846,8 @@
         persist();
         render();
       }
+    }else if(action === "start-tour"){
+      startTour();
     }
   });
 
@@ -1908,6 +1944,10 @@
     app.setAttribute("data-view", view);
     app.innerHTML = html;
     if(view === "home") setSyncStatus(syncStatus);
+    if(tourNode){
+      if(view !== "home") endTour();
+      else setTimeout(tourReposition, 20);
+    }
   }
 
   function sortByFavorite(list){
@@ -2005,6 +2045,7 @@
     html += '<button class="icon-btn" data-action="open-explore" title="Descubrir rutinas">'+icon("globe",18)+'</button>';
     html += '<button class="icon-btn'+(syncPanelOpen?' active':'')+'" data-action="toggle-sync-panel" title="Sincronización">'+icon("link",18)+'</button>';
     html += '<button class="icon-btn" data-action="open-profile" title="Perfil">'+icon("user",18)+'</button>';
+    html += '<button class="icon-btn" data-action="start-tour" title="Ayuda guiada">'+icon("help-circle",18)+'</button>';
     html += '</div>';
     html += '</div>';
 
@@ -2650,6 +2691,131 @@
 
     html += '</div>'; // player
     return html;
+  }
+
+  /* ============ guided tour ============ */
+  // Purely additive help feature: a spotlight + card walkthrough over the Home
+  // screen's existing controls. It never touches app state, only reads the DOM,
+  // so it lives outside #app (appended to <body>) instead of going through the
+  // normal render()/data-action pipeline. Steps whose target isn't present in
+  // the current DOM (e.g. no routines yet) are skipped automatically.
+  var TOUR_STEPS = [
+    { sel:".wordmark", title:"Bienvenido a Marcador", text:"Un paseo rápido por lo más importante. Pulsa «Siguiente» para continuar, o «Salir» cuando quieras." },
+    { sel:'[data-action="new-routine"]', title:"Crear una rutina", text:"Aquí creas una rutina nueva: añades los ejercicios, eliges si son por tiempo o por repeticiones, y cuánto descanso quieres entre ellos." },
+    { sel:".routine-row .row-play-btn", title:"Empezar un entrenamiento", text:"El play arranca la rutina. Marcador te va guiando ejercicio a ejercicio, con avisos de voz y sonido." },
+    { sel:".routine-row .fav-btn", title:"Favoritas", text:"Marca tus rutinas favoritas con la estrella para que aparezcan siempre arriba de la lista." },
+    { sel:'.routine-row [data-action="toggle-routine-menu"]', title:"Más opciones", text:"Desde aquí editas la rutina, la duplicas, ves su historial de sesiones o la eliminas." },
+    { sel:".home-tabs", title:"Propias y compartidas", text:"Cambia entre tus rutinas y las que te han compartido con un código de sincronización." },
+    { sel:'[data-action="open-explore"]', title:"Explorar rutinas", text:"Descubre rutinas públicas creadas por otras personas y añádelas a las tuyas." },
+    { sel:'[data-action="toggle-sync-panel"]', title:"Sincronizar dispositivos", text:"Genera un código para llevar tus rutinas a otro móvil, tablet u ordenador." },
+    { sel:'[data-action="open-profile"]', title:"Tu perfil", text:"Aquí ves el historial completo de tus entrenamientos -- fecha, hora y duración de cada sesión -- y puedes borrar lo que quieras." },
+    { sel:".help", title:"¿Dudas?", text:"Este apartado explica cómo funcionan los tiempos, las repeticiones y los descansos. Con esto ya tienes lo esencial: ¡a entrenar!" }
+  ];
+  var tourNode = null;   // { hl, card } DOM elements, or null when the tour is closed
+  var tourIndex = 0;
+
+  function tourVisibleSteps(){
+    return TOUR_STEPS.filter(function(s){ return document.querySelector(s.sel); });
+  }
+
+  function startTour(){
+    if(view !== "home") return;
+    if(!tourVisibleSteps().length) return;
+    tourIndex = 0;
+    buildTourDom();
+    showTourStep();
+  }
+
+  function buildTourDom(){
+    if(tourNode) return;
+    var hl = document.createElement("div");
+    hl.className = "tour-highlight";
+    var card = document.createElement("div");
+    card.className = "tour-card";
+    card.innerHTML =
+      '<div class="tour-kicker">Ayuda guiada</div>'+
+      '<div class="tour-title"></div>'+
+      '<div class="tour-desc"></div>'+
+      '<div class="tour-progress"></div>'+
+      '<div class="tour-actions">'+
+        '<button type="button" class="tour-btn tour-exit">Salir</button>'+
+        '<button type="button" class="tour-btn tour-prev">Anterior</button>'+
+        '<button type="button" class="tour-btn tour-next primary">Siguiente</button>'+
+      '</div>';
+    document.body.appendChild(hl);
+    document.body.appendChild(card);
+    tourNode = { hl: hl, card: card };
+    card.querySelector(".tour-exit").addEventListener("click", endTour);
+    card.querySelector(".tour-prev").addEventListener("click", function(){ tourGo(-1); });
+    card.querySelector(".tour-next").addEventListener("click", function(){ tourGo(1); });
+    window.addEventListener("resize", tourReposition);
+  }
+
+  function tourGo(delta){
+    var steps = tourVisibleSteps();
+    if(!steps.length){ endTour(); return; }
+    tourIndex += delta;
+    if(tourIndex < 0) tourIndex = 0;
+    if(tourIndex >= steps.length){ endTour(); return; }
+    showTourStep();
+  }
+
+  function showTourStep(){
+    if(!tourNode) return;
+    var steps = tourVisibleSteps();
+    if(!steps.length){ endTour(); return; }
+    if(tourIndex >= steps.length) tourIndex = steps.length - 1;
+    var step = steps[tourIndex];
+    var target = document.querySelector(step.sel);
+    if(!target){ tourGo(1); return; }
+    target.scrollIntoView({ block:"center", behavior:"smooth" });
+    tourNode.card.querySelector(".tour-title").textContent = step.title;
+    tourNode.card.querySelector(".tour-desc").textContent = step.text;
+    tourNode.card.querySelector(".tour-progress").textContent = (tourIndex+1)+"/"+steps.length;
+    tourNode.card.querySelector(".tour-prev").disabled = (tourIndex === 0);
+    tourNode.card.querySelector(".tour-next").textContent = (tourIndex === steps.length-1) ? "Entendido" : "Siguiente";
+    setTimeout(function(){ positionTour(target); }, 240);
+  }
+
+  function positionTour(target){
+    if(!tourNode || !target) return;
+    var r = target.getBoundingClientRect();
+    var pad = 8;
+    tourNode.hl.style.left = (r.left - pad)+"px";
+    tourNode.hl.style.top = (r.top - pad)+"px";
+    tourNode.hl.style.width = (r.width + pad*2)+"px";
+    tourNode.hl.style.height = (r.height + pad*2)+"px";
+
+    var card = tourNode.card;
+    var cw = card.offsetWidth, ch = card.offsetHeight;
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var margin = 14;
+    var left = r.left + r.width/2 - cw/2;
+    left = Math.max(margin, Math.min(left, vw - cw - margin));
+    var top;
+    if(r.bottom + margin + ch <= vh){ top = r.bottom + margin; }
+    else if(r.top - margin - ch >= 0){ top = r.top - margin - ch; }
+    else{ top = Math.max(margin, (vh - ch)/2); }
+    card.style.left = left+"px";
+    card.style.top = top+"px";
+  }
+
+  function tourReposition(){
+    if(!tourNode) return;
+    var steps = tourVisibleSteps();
+    var step = steps[tourIndex];
+    if(!step) { endTour(); return; }
+    var target = document.querySelector(step.sel);
+    if(target) positionTour(target);
+  }
+
+  function endTour(){
+    if(!tourNode) return;
+    tourNode.hl.remove();
+    tourNode.card.remove();
+    window.removeEventListener("resize", tourReposition);
+    tourNode = null;
+    tourIndex = 0;
   }
 
   /* ============ init ============ */
