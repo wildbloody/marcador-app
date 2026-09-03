@@ -389,21 +389,29 @@
     width:28px; height:28px; border-radius:50%; background:var(--surface-2); color:var(--text-2);
     font-family:var(--font-mono); font-size:12.5px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
   }
-  .step-num-btn{ appearance:none; border:none; cursor:pointer; }
   .step-summary-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
   .step-summary-name{ font-size:15px; font-weight:700; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .step-summary-meta{ font-size:12.5px; color:var(--text-2); font-family:var(--font-mono); }
   .step-chevron{ color:var(--text-3); flex-shrink:0; }
   .step-summary-row:hover .step-chevron{ color:var(--text-2); }
 
-  .step-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .step-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
   .step-name{
     flex:1; min-width:0; background:var(--surface-2); border:none; color:var(--text);
     border-radius:var(--r-sm); padding:10px 12px; font-size:14.5px; font-weight:700;
   }
   .step-name:focus{ outline:2px solid var(--accent); outline-offset:1px; }
   .step-name::placeholder{ color:var(--text-3); font-weight:400; }
-  .step-menu{ display:flex; gap:4px; flex-shrink:0; }
+  /* Dedicated fold button, always in the same far-right spot the unfold chevron
+     occupies when collapsed -- so tapping "where expand was" never lands on delete. */
+  .step-collapse-btn{
+    appearance:none; border:none; background:var(--surface-2); color:var(--text-2);
+    width:30px; height:30px; border-radius:var(--r-sm); cursor:pointer; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .step-collapse-btn:hover{ color:var(--text); }
+  .step-menu{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .step-menu-tools{ display:flex; gap:4px; flex-shrink:0; }
 
   .seg-toggle{ display:flex; background:var(--surface-2); border-radius:var(--r-full); padding:3px; gap:2px; margin-bottom:12px; }
   .seg-toggle button{
@@ -443,8 +451,14 @@
     display:flex; align-items:center; justify-content:center;
   }
   .tool-btn:hover{ color:var(--text); }
-  .tool-btn.remove:hover{ color:var(--danger); }
   .tool-btn[disabled]{ opacity:0.3; cursor:not-allowed; }
+  /* Delete is now its own labeled, danger-toned button, off to the side of the
+     up/down/duplicate cluster and away from the fold button -- harder to hit by accident. */
+  .tool-btn.remove{
+    width:auto; padding:0 10px; gap:6px; font-size:12.5px; font-weight:700;
+    color:var(--danger); background:var(--danger-soft);
+  }
+  .tool-btn.remove:hover{ opacity:0.82; }
 
   .add-step-bar{ padding:var(--sp-2) var(--sp-5) var(--sp-1); }
   .editor-footer{ padding:var(--sp-5); }
@@ -1667,7 +1681,12 @@
       }
     }else if(action === "remove-step"){
       var routine2 = findRoutine(editingId);
-      if(routine2){ routine2.steps = routine2.steps.filter(function(s){ return s.id !== stepId; }); persist(); render(); }
+      var stepToRemove = routine2 && routine2.steps.find(function(s){ return s.id === stepId; });
+      var stepLabel = stepToRemove && stepToRemove.name ? '"'+stepToRemove.name+'"' : "este ejercicio";
+      if(routine2 && window.confirm("¿Eliminar "+stepLabel+"? No se puede deshacer.")){
+        routine2.steps = routine2.steps.filter(function(s){ return s.id !== stepId; });
+        persist(); render();
+      }
     }else if(action === "duplicate-step"){
       var routine3 = findRoutine(editingId);
       if(routine3){
@@ -2433,13 +2452,17 @@
     var html = '<div class="step-row expanded">';
 
     html += '<div class="step-head">';
-    html += '<button class="step-num step-num-btn" data-action="toggle-step" data-step="'+step.id+'" title="Contraer">'+(i+1)+'</button>';
+    html += '<span class="step-num">'+(i+1)+'</span>';
     html += '<input class="step-name" data-field="name" data-step="'+step.id+'" value="'+escapeHtml(step.name)+'" placeholder="Nombre del ejercicio">';
+    html += '<button class="step-collapse-btn" data-action="toggle-step" data-step="'+step.id+'" title="Plegar">'+icon("chevron-up",18)+'</button>';
+    html += '</div>';
+
     html += '<div class="step-menu">';
+    html += '<button class="tool-btn remove" data-action="remove-step" data-step="'+step.id+'" title="Eliminar ejercicio">'+icon("trash",14)+' Eliminar</button>';
+    html += '<div class="step-menu-tools">';
     html += '<button class="tool-btn" data-action="move-step" data-dir="up" data-step="'+step.id+'" '+(i===0?'disabled':'')+' title="Subir">'+icon("chevron-up",15)+'</button>';
     html += '<button class="tool-btn" data-action="move-step" data-dir="down" data-step="'+step.id+'" '+(i===count-1?'disabled':'')+' title="Bajar">'+icon("chevron-down",15)+'</button>';
     html += '<button class="tool-btn" data-action="duplicate-step" data-step="'+step.id+'" title="Duplicar">'+icon("copy",14)+'</button>';
-    html += '<button class="tool-btn remove" data-action="remove-step" data-step="'+step.id+'" title="Eliminar">'+icon("x",15)+'</button>';
     html += '</div>';
     html += '</div>';
 
