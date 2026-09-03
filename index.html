@@ -133,10 +133,9 @@
   .link-btn:hover{ color:var(--text); }
 
   /* ---------- top bar / icon buttons (shared) ---------- */
-  .topbar-main{ display:flex; align-items:flex-start; justify-content:space-between; padding:var(--sp-6) var(--sp-5) 2px; }
-  .wordmark{ display:flex; align-items:baseline; gap:2px; font-family:var(--font-display); font-weight:400; font-size:clamp(30px,8vw,38px); line-height:0.85; letter-spacing:0.015em; color:var(--text); }
-  .wordmark-mark{ width:8px; height:8px; background:var(--accent); border-radius:2px; transform:translateY(-9px) rotate(45deg); flex-shrink:0; }
-  .topbar-main .topbar-actions{ margin-top:3px; }
+  .topbar-main{ display:flex; align-items:center; justify-content:space-between; padding:var(--sp-6) var(--sp-5) 2px; }
+  .wordmark{ display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:400; font-size:clamp(30px,8vw,38px); line-height:0.85; letter-spacing:0.015em; color:var(--text); }
+  .wordmark-mark{ display:flex; align-items:center; color:var(--accent); flex-shrink:0; }
   .home-context{ padding:0 var(--sp-5) var(--sp-5); color:var(--text-2); font-size:14px; font-weight:500; }
   .topbar-actions{ display:flex; gap:2px; }
   .icon-btn{
@@ -164,7 +163,10 @@
   }
   .btn-start:active{ transform:scale(0.98); }
   .btn-start[disabled]{ opacity:0.35; cursor:not-allowed; }
-  .btn-start.lg{ height:58px; font-size:16.5px; }
+  .btn-start.outline{
+    height:44px; font-size:14px; background:transparent; color:var(--accent); border:1.5px solid var(--accent); font-weight:700;
+  }
+  .btn-start.outline:active{ background:var(--accent-soft); }
 
   .home-tabs{ margin:2px var(--sp-5) var(--sp-4); }
 
@@ -198,7 +200,8 @@
   .row-play-btn:active{ transform:scale(0.92); }
   .row-play-btn[disabled]{ opacity:0.35; cursor:not-allowed; }
   .routine-row-expand{ padding:var(--sp-4) 0 2px 26px; }
-  .routine-row-full-meta{ color:var(--text-2); font-size:13px; margin-bottom:10px; font-variant-numeric:tabular-nums; }
+  .routine-row-full-meta{ color:var(--text-2); font-size:13px; margin-bottom:6px; font-variant-numeric:tabular-nums; }
+  .routine-row-steps{ color:var(--text-2); font-size:13px; line-height:1.55; margin-bottom:12px; }
   .row-badges{ display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
 
   .menu-backdrop{ position:fixed; inset:0; z-index:29; background:transparent; }
@@ -1039,7 +1042,8 @@
     sliders: '<line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/>',
     "trending-up": '<polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/>',
     star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
-    "star-filled": '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none"/>'
+    "star-filled": '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none"/>',
+    shoe: '<path d="M2 18 L2 15 L6 13 L12 9 L14 9 L15 11.5 L18 10.5 L21 12 L22 14 L22 17 L20 18 Z" fill="currentColor" stroke="none"/>'
   };
   function icon(name, size){
     var s = size || 16;
@@ -1849,11 +1853,15 @@
     if(expanded){
       html += '<div class="routine-row-expand">';
       html += '<div class="routine-row-full-meta">'+r.steps.length+' ejercicio'+(r.steps.length===1?"":"s")+(roundsN>1?' · '+roundsN+' vueltas':'')+' · '+fmtTime(total)+(r.targetMinutes?' · meta '+r.targetMinutes+' min':'')+'</div>';
+      if(r.steps.length){
+        var stepNames = r.steps.map(function(s, i){ return s.name ? s.name : ("Ejercicio "+(i+1)); });
+        html += '<div class="routine-row-steps">'+escapeHtml(stepNames.join(' · '))+'</div>';
+      }
       var badges = "";
       if(r.isPublic) badges += '<span class="badge">'+icon("globe",11)+' Pública</span>';
       if(r.linkedCodes && r.linkedCodes.length) badges += '<span class="badge">'+icon("link",11)+' Compartida ('+(r.linkedCodes.length+1)+')</span>';
       if(badges) html += '<div class="row-badges">'+badges+'</div>';
-      html += '<button class="btn-start lg" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+'>'+icon("play",18)+' Empezar</button>';
+      html += '<button class="btn-start outline" data-action="start-routine" data-id="'+r.id+'" '+(r.steps.length?'':'disabled')+'>'+icon("play",15)+' Empezar</button>';
       html += '</div>';
     }
 
@@ -1867,7 +1875,7 @@
     html += '<div class="screen">';
 
     html += '<div class="topbar topbar-main">';
-    html += '<span class="wordmark">MARCADOR<span class="wordmark-mark"></span></span>';
+    html += '<span class="wordmark">MARCADOR<span class="wordmark-mark">'+icon("shoe",22)+'</span></span>';
     html += '<div class="topbar-actions">';
     html += '<button class="icon-btn" data-action="open-explore" title="Descubrir rutinas">'+icon("globe",18)+'</button>';
     html += '<button class="icon-btn'+(syncPanelOpen?' active':'')+'" data-action="toggle-sync-panel" title="Sincronización">'+icon("link",18)+'</button>';
