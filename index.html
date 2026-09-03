@@ -131,6 +131,8 @@
   .empty-state-actions{ display:flex; flex-direction:column; align-items:center; gap:var(--sp-3); margin-top:var(--sp-2); }
   .link-btn{ background:none; border:none; color:var(--text-2); font-size:13.5px; font-weight:700; cursor:pointer; padding:8px; }
   .link-btn:hover{ color:var(--text); }
+  .link-btn.danger{ color:var(--danger); }
+  .link-btn.danger:hover{ opacity:0.8; }
 
   /* ---------- top bar / icon buttons (shared) ---------- */
   .topbar-main{ display:flex; align-items:center; justify-content:space-between; padding:var(--sp-6) var(--sp-5) 2px; }
@@ -141,7 +143,15 @@
     border-radius:10px; background:var(--accent-soft); color:var(--accent); flex-shrink:0;
   }
   .home-context{ padding:0 var(--sp-5) var(--sp-5); color:var(--text-2); font-size:14px; font-weight:500; }
-  .topbar-actions{ display:flex; gap:2px; }
+  .topbar-actions{ display:flex; gap:2px; flex-shrink:0; }
+  /* Three header icons (explore/sync/profile) plus the wordmark badge no longer fit
+     comfortably on narrow phones -- tighten spacing and icon size just for those. */
+  @media (max-width:380px){
+    .topbar-main{ padding-left:var(--sp-4); padding-right:var(--sp-4); }
+    .topbar-main .wordmark{ gap:7px; font-size:clamp(24px,7vw,38px); }
+    .topbar-main .topbar-actions{ gap:0; }
+    .topbar-main .icon-btn{ width:33px; height:33px; }
+  }
   .icon-btn{
     appearance:none; border:none; background:transparent; color:var(--text-2);
     width:38px; height:38px; border-radius:var(--r-sm); cursor:pointer; display:flex; align-items:center; justify-content:center;
@@ -149,6 +159,9 @@
   }
   .icon-btn:hover{ color:var(--text); background:var(--surface-2); }
   .icon-btn.active{ color:var(--accent); background:var(--accent-soft); }
+  .icon-btn.sm{ width:28px; height:28px; }
+  .icon-btn.xs{ width:22px; height:22px; color:var(--text-3); flex-shrink:0; }
+  .icon-btn.xs:hover{ color:var(--danger); background:var(--danger-soft); }
   .icon-text-btn{
     appearance:none; border:none; background:none; color:var(--text-2); font-size:13.5px; font-weight:700;
     padding:8px 6px; margin:0 -6px; border-radius:7px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;
@@ -212,6 +225,10 @@
     font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-variant-numeric:tabular-nums;
   }
   .row-step-name{ font-size:13.5px; color:var(--text-2); line-height:1.3; }
+  .row-notes{
+    font-size:13px; color:var(--text-2); line-height:1.5; background:var(--surface-2); border-radius:var(--r-sm);
+    padding:10px 12px; margin-bottom:14px; white-space:pre-line;
+  }
 
   .menu-backdrop{ position:fixed; inset:0; z-index:29; background:transparent; }
   .routine-menu{
@@ -261,6 +278,12 @@
     font-family:var(--font-display); font-size:32px; letter-spacing:0.01em; padding:var(--sp-2) 2px; width:100%;
   }
   .name-input:focus{ border-bottom-color:var(--accent); }
+  .notes-input{
+    background:transparent; border:none; color:var(--text-2); font-size:13.5px; line-height:1.5;
+    padding:var(--sp-2) 2px 0; width:100%; resize:vertical; min-height:20px; max-height:160px; font-family:inherit;
+  }
+  .notes-input::placeholder{ color:var(--text-3); }
+  .notes-input:focus{ outline:none; color:var(--text); }
 
   .editor-stat{ display:flex; align-items:baseline; gap:9px; padding:0 var(--sp-5) var(--sp-4); }
   .editor-stat .total-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-3); font-weight:700; }
@@ -290,6 +313,7 @@
 
   .history-box{ margin-top:var(--sp-4); padding-top:var(--sp-4); border-top:1px solid var(--border); display:flex; flex-direction:column; gap:var(--sp-4); }
   .history-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .history-header-actions{ display:flex; align-items:center; gap:2px; }
   .history-title{ font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-3); font-weight:700; }
   .history-stats{ display:flex; gap:10px; }
   .stat-tile{ flex:1; background:var(--surface); border-radius:var(--r-sm); padding:10px 12px; }
@@ -302,9 +326,17 @@
   .history-row:last-child{ border-bottom:none; }
   .history-row.best{ color:var(--text); font-weight:700; }
   .history-left{ display:flex; align-items:center; gap:8px; }
+  .history-right{ display:flex; align-items:center; gap:6px; }
   .history-date{ color:var(--text-3); font-variant-numeric:tabular-nums; }
   .history-time{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
   .history-empty{ color:var(--text-3); font-size:12.5px; line-height:1.5; }
+
+  /* ---------- profile ---------- */
+  .profile-stats{ margin:0 var(--sp-5) var(--sp-4); }
+  .profile-history-header{ display:flex; align-items:center; justify-content:space-between; margin:0 var(--sp-5) var(--sp-2); }
+  .profile-history-list{ padding:0 var(--sp-5) var(--sp-5); }
+  .profile-left{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
+  .profile-row-routine{ color:var(--text); font-weight:700; font-size:13.5px; }
 
   .chart-empty{ color:var(--text-3); font-size:12.5px; line-height:1.5; }
   .compare-chart{ display:flex; flex-direction:column; gap:8px; padding:4px 0; }
@@ -613,6 +645,7 @@
     if(r.publicId === undefined) r.publicId = null;
     if(r.favorite === undefined) r.favorite = false;
     if(r.imported === undefined) r.imported = false;
+    if(r.notes === undefined) r.notes = "";
     return r;
   }
 
@@ -1002,6 +1035,15 @@
     catch(e){ return ""; }
   }
 
+  function fmtDateTime(ts){
+    try{
+      var d = new Date(ts);
+      var datePart = d.toLocaleDateString("es-ES", { day:"2-digit", month:"short" });
+      var timePart = d.toLocaleTimeString("es-ES", { hour:"2-digit", minute:"2-digit" });
+      return datePart + " · " + timePart;
+    }catch(e){ return ""; }
+  }
+
   function stepOwnSeconds(step){
     return step.type === "time" ? (Number(step.seconds)||0) : (Number(step.estSeconds)||0);
   }
@@ -1052,7 +1094,8 @@
     "trending-up": '<polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/>',
     star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
     "star-filled": '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" stroke="none"/>',
-    zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/>'
+    zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/>',
+    user: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'
   };
   function icon(name, size){
     var s = size || 16;
@@ -1061,7 +1104,7 @@
   }
 
   /* ============ view / routing ============ */
-  var view = "home";          // 'home' | 'editor' | 'player' | 'explore'
+  var view = "home";          // 'home' | 'editor' | 'player' | 'explore' | 'profile'
   var editingId = null;
   var expandedHistoryId = null; // which routine's history box is open on the home screen
   var showChartForId = null;    // which routine's chart (progress or shared comparison) is open
@@ -1723,6 +1766,30 @@
       expandedHistoryId = expandedHistoryId === id ? null : id;
       openMenuId = null;
       render();
+    }else if(action === "open-profile"){
+      go("profile");
+    }else if(action === "delete-history-entry"){
+      var routineForDel = findRoutine(id);
+      var entryTs = Number(t.getAttribute("data-entry"));
+      if(routineForDel && Array.isArray(routineForDel.history)){
+        routineForDel.history = routineForDel.history.filter(function(h){ return h.ts !== entryTs; });
+        persist();
+        render();
+      }
+    }else if(action === "clear-routine-history"){
+      var routineForClear = findRoutine(id);
+      if(routineForClear && (routineForClear.history||[]).length && window.confirm('¿Vaciar todo el historial de "'+routineForClear.name+'"? No se puede deshacer.')){
+        routineForClear.history = [];
+        persist();
+        render();
+      }
+    }else if(action === "clear-all-history"){
+      var anyHistory = state.routines.some(function(r){ return (r.history||[]).length; });
+      if(anyHistory && window.confirm("¿Vaciar todo tu historial de entrenamientos, de todas las rutinas? No se puede deshacer.")){
+        state.routines.forEach(function(r){ r.history = []; });
+        persist();
+        render();
+      }
     }
   });
 
@@ -1770,6 +1837,11 @@
       persist();
       return;
     }
+    if(field === "notes"){
+      routine.notes = t.value;
+      persist();
+      return;
+    }
     var step = routine.steps.find(function(s){ return s.id === stepId; });
     if(!step) return;
     if(field === "name"){ step.name = t.value; persist(); return; }
@@ -1810,6 +1882,7 @@
     else if(view === "editor") html = renderEditor();
     else if(view === "player") html = renderPlayer();
     else if(view === "explore") html = renderExplore();
+    else if(view === "profile") html = renderProfile();
     app.setAttribute("data-view", view);
     app.innerHTML = html;
     if(view === "home") setSyncStatus(syncStatus);
@@ -1878,6 +1951,10 @@
       if(r.linkedCodes && r.linkedCodes.length) html += '<span class="row-stat-pill">'+icon("link",11)+' Compartida ('+(r.linkedCodes.length+1)+')</span>';
       html += '</div>';
 
+      if(r.notes && r.notes.trim()){
+        html += '<div class="row-notes">'+escapeHtml(r.notes)+'</div>';
+      }
+
       if(r.steps.length){
         html += '<div class="row-steps-list">';
         r.steps.forEach(function(s, i){
@@ -1905,6 +1982,7 @@
     html += '<div class="topbar-actions">';
     html += '<button class="icon-btn" data-action="open-explore" title="Descubrir rutinas">'+icon("globe",18)+'</button>';
     html += '<button class="icon-btn'+(syncPanelOpen?' active':'')+'" data-action="toggle-sync-panel" title="Sincronización">'+icon("link",18)+'</button>';
+    html += '<button class="icon-btn" data-action="open-profile" title="Perfil">'+icon("user",18)+'</button>';
     html += '</div>';
     html += '</div>';
 
@@ -1985,6 +2063,7 @@
 
     html += '<div class="editor-header">';
     html += '<input class="name-input" data-field="routine-name" value="'+escapeHtml(routine.name)+'" placeholder="Nombre de la rutina">';
+    html += '<textarea class="notes-input" data-field="notes" placeholder="Notas (opcional): para qué está enfocada, recomendaciones...">'+escapeHtml(routine.notes||"")+'</textarea>';
     html += '</div>';
 
     html += '<div class="editor-stat"><span class="total-label">Duración</span><span class="total-time" id="totalTimeDisplay">'+fmtTime(total)+'</span></div>';
@@ -2063,11 +2142,12 @@
     var lastSeconds = hist[0].seconds; // most recent (history is stored newest-first)
 
     var html = '<div class="history-box">';
-    html += '<div class="history-header"><div class="history-title">Tu progreso</div>';
+    html += '<div class="history-header"><div class="history-title">Tu progreso</div><div class="history-header-actions">';
     if(hist.length > 1 || routine.shareId){
       html += '<button class="icon-text-btn" data-action="toggle-chart" data-id="'+routine.id+'">'+icon("bar-chart",14)+' '+(showChartForId===routine.id?'Ocultar gráfico':'Comparar')+'</button>';
     }
-    html += '</div>';
+    html += '<button class="icon-btn sm" data-action="clear-routine-history" data-id="'+routine.id+'" title="Vaciar historial de esta rutina">'+icon("trash",14)+'</button>';
+    html += '</div></div>';
 
     html += '<div class="history-stats">';
     html += '<div class="stat-tile best"><div class="stat-label">Mejor</div><div class="stat-value">'+fmtTime(bestSeconds)+'</div></div>';
@@ -2092,8 +2172,8 @@
     hist.slice(0,15).forEach(function(h){
       var isBest = h.seconds === bestSeconds;
       html += '<div class="history-row'+(isBest?' best':'')+'">';
-      html += '<span class="history-left"><span class="history-date">'+fmtDate(h.ts)+'</span></span>';
-      html += '<span class="history-time">'+fmtTime(h.seconds)+(isBest?' <span class="pr-tag">PR</span>':'')+'</span>';
+      html += '<span class="history-left"><span class="history-date">'+fmtDateTime(h.ts)+'</span></span>';
+      html += '<span class="history-right"><span class="history-time">'+fmtTime(h.seconds)+(isBest?' <span class="pr-tag">PR</span>':'')+'</span><button class="icon-btn xs" data-action="delete-history-entry" data-id="'+routine.id+'" data-entry="'+h.ts+'" title="Eliminar esta sesión">'+icon("x",12)+'</button></span>';
       html += '</div>';
     });
     html += '</div></div>';
@@ -2267,6 +2347,47 @@
     return html;
   }
 
+  function renderProfile(){
+    var html = "";
+    html += '<div class="screen">';
+    html += '<div class="topbar"><button class="icon-text-btn" data-action="back-home">'+icon("chevron-left",16)+' Rutinas</button></div>';
+    html += '<div class="explore-header"><div class="explore-title">Perfil</div><div class="explore-sub">Tu historial de entrenamientos</div></div>';
+
+    var allEntries = [];
+    state.routines.forEach(function(r){
+      (r.history||[]).forEach(function(h){
+        allEntries.push({ routineId: r.id, routineName: r.name || "Sin nombre", ts: h.ts, seconds: h.seconds });
+      });
+    });
+    allEntries.sort(function(a,b){ return b.ts - a.ts; });
+
+    var totalSeconds = allEntries.reduce(function(sum, e){ return sum + e.seconds; }, 0);
+    var wCount = weeklySessionCount();
+
+    html += '<div class="history-stats profile-stats">';
+    html += '<div class="stat-tile"><div class="stat-label">Sesiones</div><div class="stat-value">'+allEntries.length+'</div></div>';
+    html += '<div class="stat-tile"><div class="stat-label">Esta semana</div><div class="stat-value">'+wCount+'</div></div>';
+    html += '<div class="stat-tile"><div class="stat-label">Tiempo total</div><div class="stat-value">'+fmtTime(totalSeconds)+'</div></div>';
+    html += '</div>';
+
+    if(!allEntries.length){
+      html += '<div class="empty-state"><div class="empty-state-sub">Todavía no has completado ningún entrenamiento. Cuando termines una rutina, aparecerá aquí con fecha, hora y duración.</div></div>';
+    }else{
+      html += '<div class="profile-history-header"><span class="history-title">Historial completo</span><button class="link-btn danger" data-action="clear-all-history">Vaciar todo</button></div>';
+      html += '<div class="history-list profile-history-list">';
+      allEntries.forEach(function(e){
+        html += '<div class="history-row profile-row">';
+        html += '<span class="history-left profile-left"><span class="profile-row-routine">'+escapeHtml(e.routineName)+'</span><span class="history-date">'+fmtDateTime(e.ts)+'</span></span>';
+        html += '<span class="history-right"><span class="history-time">'+fmtTime(e.seconds)+'</span><button class="icon-btn xs" data-action="delete-history-entry" data-id="'+e.routineId+'" data-entry="'+e.ts+'" title="Eliminar esta sesión">'+icon("x",12)+'</button></span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
   function chipsRow(field, stepId, current, options){
     var html = '<div class="chips">';
     options.forEach(function(v){
@@ -2419,7 +2540,13 @@
     html += '<span class="phase-pill '+(isRest?'rest':'work')+'">'+phaseLabel+'</span>';
 
     if(isRest){
-      html += '<h2 class="exercise-name">Descanso</h2>';
+      // The phase-pill above already reads "Descanso" -- only repeat it as the big
+      // heading when there's nothing else to show (the final rest of the workout,
+      // with no next exercise to preview); otherwise the "Siguiente" block below
+      // carries the heading's job and showing "Descanso" twice was redundant.
+      if(!item.nextName){
+        html += '<h2 class="exercise-name">Descanso</h2>';
+      }
     }else{
       html += '<h2 class="exercise-name">'+escapeHtml(item.name)+'</h2>';
     }
